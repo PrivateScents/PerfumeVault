@@ -124,8 +124,10 @@ fun DiaryScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
 
     if (editingLog != null) {
         val currentEditingLog = editingLog!!
+        val perfume = perfumeMap[currentEditingLog.perfumeId]
         com.example.perfumevault.ui.dialogs.EditLogDialog(
             log = currentEditingLog,
+            currentPerfumeVolume = perfume?.remainingMl ?: 0.0,
             viewModel = viewModel,
             onDismiss = { 
                 editingLog = null 

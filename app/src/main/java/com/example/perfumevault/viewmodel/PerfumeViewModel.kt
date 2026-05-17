@@ -216,12 +216,12 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
 
     fun addLog(perfumeId: Int, occasion: String, weather: String, note: String, sprays: Int) {
         viewModelScope.launch {
-            // Füllstand checken
             repo.getPerfumeById(perfumeId).firstOrNull()?.let { perfume ->
                 val reduction = sprays.toDouble() / 15.0
                 val newRemaining = (perfume.remainingMl - reduction).coerceIn(0.0, perfume.bottleSize.toDouble())
+                // Round to 4 decimal places to prevent floating point drift
+                val roundedRemaining = Math.round(newRemaining * 10000.0) / 10000.0
                 
-                // Log hinzufügen
                 repo.addLog(UsageLog(
                     perfumeId = perfumeId,
                     date = LocalDate.now().toString(),
@@ -231,15 +231,19 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
                     sprays = sprays
                 ))
 
-                repo.updateRemainingMl(perfumeId, newRemaining)
+                repo.updateRemainingMl(perfumeId, roundedRemaining)
             }
         }
     }
 
     fun deleteLog(log: UsageLog) {
         viewModelScope.launch {
-            // Füllstand zurückgeben wenn gelöscht wird? 
-            // Vorerst nur löschen
+            repo.getPerfumeById(log.perfumeId).firstOrNull()?.let { perfume ->
+                val addition = log.sprays.toDouble() / 15.0
+                val newRemaining = (perfume.remainingMl + addition).coerceIn(0.0, perfume.bottleSize.toDouble())
+                val roundedRemaining = Math.round(newRemaining * 10000.0) / 10000.0
+                repo.updateRemainingMl(perfume.id, roundedRemaining)
+            }
             repo.deleteLog(log)
         }
     }
@@ -247,11 +251,11 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
     fun updateLog(log: UsageLog, oldSprays: Int) {
         viewModelScope.launch {
             repo.updateLog(log)
-            // Differenz im Füllstand anpassen
             val diff = (log.sprays - oldSprays).toDouble() / 15.0
             repo.getPerfumeById(log.perfumeId).firstOrNull()?.let { perfume ->
                 val newRemaining = (perfume.remainingMl - diff).coerceIn(0.0, perfume.bottleSize.toDouble())
-                repo.updateRemainingMl(perfume.id, newRemaining)
+                val roundedRemaining = Math.round(newRemaining * 10000.0) / 10000.0
+                repo.updateRemainingMl(perfume.id, roundedRemaining)
             }
         }
     }

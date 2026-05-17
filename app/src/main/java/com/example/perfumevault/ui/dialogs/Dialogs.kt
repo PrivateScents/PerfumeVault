@@ -999,10 +999,15 @@ fun BulkAddDialog(
 @Composable
 fun EditLogDialog(
     log: com.example.perfumevault.data.UsageLog,
+    currentPerfumeVolume: Double,
     viewModel: com.example.perfumevault.viewmodel.PerfumeViewModel,
     onDismiss: () -> Unit,
     onSave: (com.example.perfumevault.data.UsageLog) -> Unit
 ) {
+    // Calculate how many sprays are available total (current + what was already used in this log)
+    val totalAvailableVolume = currentPerfumeVolume + (log.sprays.toDouble() / 15.0)
+    val maxAllowedSprays = (totalAvailableVolume * 15.0).toInt().coerceIn(1, 200)
+
     val weathers = listOf("☀️ Sonnig", "🌤 Bewölkt", "🌧 Regen", "❄️ Kalt", "🌡 Heiß")
     val occasions = listOf("Alltag", "Business", "Abend", "Date", "Sport", "Reise")
 
@@ -1026,7 +1031,7 @@ fun EditLogDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column {
-                    SectionLabel(viewModel.t("Sprüher", "Sprays"))
+                    SectionLabel(viewModel.t("Sprühstöße", "Sprays"))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -1045,9 +1050,18 @@ fun EditLogDialog(
                         )
                         
                         IconButton(
-                            onClick = { sprays++ },
+                            onClick = { if (sprays < maxAllowedSprays) sprays++ },
                             modifier = Modifier.background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
                         ) { Icon(Icons.Default.Add, null, tint = AppleTextBlack) }
+                    }
+                    
+                    if (sprays >= maxAllowedSprays) {
+                        Text(
+                            viewModel.t("Max. Kapazität erreicht", "Max volume reached"),
+                            fontSize = 10.sp,
+                            color = Color.Red,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
                     }
                 }
 
