@@ -46,6 +46,23 @@ fun DiaryScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
         logs.groupBy { it.date }.entries.sortedByDescending { it.key }
     }
 
+    // Pre-calculate historical volumes for each log to ensure correct math in UI
+    val historicalVolumes = remember(logs, perfumes) {
+        val map = mutableMapOf<Int, Double>() // logId -> volume AFTER this log
+        val currentVolumes = perfumes.associate { it.id to it.remainingMl }.toMutableMap()
+        
+        // Process logs from NEWEST to OLDEST (as they appear in the list)
+        // Since remainingMl is the volume AFTER the newest log.
+        logs.sortedByDescending { it.id }.forEach { log ->
+            val volAfter = currentVolumes[log.perfumeId] ?: 0.0
+            map[log.id] = volAfter
+            // To find the volume BEFORE this log, we add what was consumed
+            val mlConsumed = log.sprays.toDouble() / 15.0
+            currentVolumes[log.perfumeId] = volAfter + mlConsumed
+        }
+        map
+    }
+
     if (grouped.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -90,6 +107,7 @@ fun DiaryScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                                 log = log,
                                 perfume = perfume,
                                 viewModel = viewModel,
+                                volAfter = historicalVolumes[log.id] ?: perfume.remainingMl,
                                 onDelete = { viewModel.deleteLog(log) },
                                 onPerfumeClick = { onPerfumeClick(perfume.id) },
                                 onEditClick = { editingLog = log }
@@ -147,7 +165,7 @@ fun DateHeader(dateStr: String, viewModel: PerfumeViewModel) {
 }
 
 @Composable
-fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, onDelete: () -> Unit, onPerfumeClick: () -> Unit, onEditClick: () -> Unit) {
+fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, volAfter: Double, onDelete: () -> Unit, onPerfumeClick: () -> Unit, onEditClick: () -> Unit) {
     var showDelete by remember { mutableStateOf(false) }
 
     GlassCard(
@@ -188,17 +206,35 @@ fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, onDele
                     else -> Color(0xFFF44336)
                 }
                 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(progressColor.copy(alpha = 0.1f))
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
+                val mlConsumed = log.sprays.toDouble() / 15.0
+                
+                Column(horizontalAlignment = Alignment.End) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(progressColor.copy(alpha = 0.1f))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            "${log.sprays} ${viewModel.t("Sprüher", "Sprays")}",
+                            color = progressColor,
+                            fontSize = 12.sp, 
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                     Text(
-                        "${log.sprays} ${viewModel.t("Sprüher", "Sprays")}",
-                        color = progressColor,
-                        fontSize = 12.sp, 
-                        fontWeight = FontWeight.Bold
+                        viewModel.t(
+                            "Verbrauch: %.2f ml (%.2f ml → %.2f ml)",
+                            "Usage: %.2f ml (%.2f ml → %.2f ml)"
+                        ).format(
+                            mlConsumed, 
+                            volAfter + mlConsumed, 
+                            volAfter
+                        ),
+                        fontSize = 9.sp,
+                        color = AppleTextSecondary,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(top = 2.dp, end = 4.dp)
                     )
                 }
             }

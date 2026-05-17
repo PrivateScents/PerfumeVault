@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UsageLogDao {
 
-    @Query("SELECT * FROM usage_logs ORDER BY date DESC")
+    @Query("SELECT * FROM usage_logs ORDER BY date DESC, id DESC")
     fun getAllLogs(): Flow<List<UsageLog>>
 
     @Query("SELECT * FROM usage_logs WHERE perfumeId = :perfumeId ORDER BY date DESC")
