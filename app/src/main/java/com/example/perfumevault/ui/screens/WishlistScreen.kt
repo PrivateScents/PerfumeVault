@@ -8,6 +8,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -194,34 +195,37 @@ fun WishlistCard(
         isDarkMode = isDarkMode
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (perfume.imageUrl.isNotEmpty()) {
-                AsyncImage(
-                    model = perfume.imageUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(70.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background((if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.05f))
-                        .padding(4.dp),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(70.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.03f)),
-                    contentAlignment = Alignment.Center
-                ) {
+            Box(
+                modifier = Modifier
+                    .size(90.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.03f))
+                    .border(
+                        0.5.dp, 
+                        (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.08f),
+                        RoundedCornerShape(20.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (perfume.imageUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = perfume.imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                    )
+                } else {
                     Icon(
                         Icons.Default.ShoppingBag,
                         contentDescription = null,
-                        tint = (if (isDarkMode) Color.White else AppleTextSecondary).copy(alpha = 0.3f),
-                        modifier = Modifier.size(28.dp)
+                        tint = (if (isDarkMode) Color.White else AppleTextSecondary).copy(alpha = 0.2f),
+                        modifier = Modifier.size(36.dp)
                     )
                 }
             }
@@ -232,19 +236,23 @@ fun WishlistCard(
                     fontSize = 10.sp,
                     color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                    letterSpacing = 1.2.sp
                 )
                 Text(
                     perfume.name,
-                    fontSize = 18.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isDarkMode) Color.White else AppleTextBlack,
-                    lineHeight = 22.sp
+                    lineHeight = 26.sp,
+                    letterSpacing = (-0.5).sp
                 )
                 
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
                 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Button(
                         onClick = {
                             isMoving = true
@@ -253,15 +261,15 @@ fun WishlistCard(
                                 onBuy()
                             }
                         },
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                        modifier = Modifier.height(32.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        modifier = Modifier.height(38.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isDarkMode) Color.White else AppleTextBlack,
+                            containerColor = if (isDarkMode) Color.White else Color.Black,
                             contentColor = if (isDarkMode) Color.Black else Color.White
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(viewModel.t("Gerade gekauft", "Just Bought"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(viewModel.t("Gerade gekauft", "Just Bought"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                     
                     IconButton(
@@ -272,7 +280,7 @@ fun WishlistCard(
                             Icons.Default.DeleteOutline, 
                             contentDescription = null, 
                             tint = Color.Red.copy(alpha = 0.6f),
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }

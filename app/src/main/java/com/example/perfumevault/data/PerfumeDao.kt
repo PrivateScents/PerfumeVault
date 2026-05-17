@@ -51,6 +51,9 @@ interface PerfumeDao {
     @Delete
     suspend fun delete(perfume: Perfume): Int
 
+    @Query("DELETE FROM perfumes")
+    suspend fun deleteAll(): Int
+
     @Query("UPDATE perfumes SET isFavorite = :fav WHERE id = :id")
     suspend fun setFavorite(id: Int, fav: Boolean): Int
 

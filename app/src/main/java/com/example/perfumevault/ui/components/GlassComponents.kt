@@ -23,21 +23,23 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Apple Light Mode Colors
+// Apple Modern Palette
 val AppleTextBlack = Color(0xFF1D1D1F)
 val AppleTextSecondary = Color(0xFF86868B)
 val AppleAccentBlue = Color(0xFF007AFF)
+val AppleBackgroundLight = Color(0xFFF5F5F7)
+val AppleBackgroundDark = Color(0xFF000000)
 
 @Composable
 fun GlassSurface(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 32.dp,
-    alpha: Float = 0.4f, // Higher transparency for intense glass look
+    alpha: Float = 0.4f,
     isDarkMode: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val baseColor = if (isDarkMode) Color.Black else Color.White
-    val borderColor = if (isDarkMode) Color.White.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.9f)
+    val baseColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White
+    val borderColor = if (isDarkMode) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f)
     
     Box(
         modifier = modifier
@@ -46,7 +48,7 @@ fun GlassSurface(
                 Brush.verticalGradient(
                     colors = listOf(
                         baseColor.copy(alpha = alpha),
-                        baseColor.copy(alpha = alpha * 0.5f)
+                        baseColor.copy(alpha = alpha * 0.7f)
                     )
                 )
             )
@@ -56,13 +58,8 @@ fun GlassSurface(
             shape = RoundedCornerShape(cornerRadius),
             color = Color.Transparent,
             border = BorderStroke(
-                1.5.dp, // Thicker border for glass definition
-                Brush.verticalGradient(
-                    colors = listOf(
-                        borderColor,
-                        borderColor.copy(alpha = 0.1f)
-                    )
-                )
+                0.5.dp, 
+                borderColor
             )
         ) {}
         content()

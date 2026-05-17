@@ -23,6 +23,7 @@ class PerfumeRepository(
     suspend fun addPerfumes(perfumes: List<Perfume>) = perfumeDao.insertAll(perfumes)
     suspend fun updatePerfume(perfume: Perfume) = perfumeDao.update(perfume)
     suspend fun deletePerfume(perfume: Perfume) = perfumeDao.delete(perfume)
+    suspend fun deleteAllPerfumes() = perfumeDao.deleteAll()
     suspend fun toggleFavorite(id: Int, current: Boolean) = perfumeDao.setFavorite(id, !current)
     suspend fun updateRemainingMl(id: Int, ml: Double) = perfumeDao.updateRemainingMl(id, ml)
 
@@ -38,4 +39,5 @@ class PerfumeRepository(
     suspend fun addLog(log: UsageLog) = logDao.insert(log)
     suspend fun updateLog(log: UsageLog) = logDao.update(log)
     suspend fun deleteLog(log: UsageLog) = logDao.delete(log)
+    suspend fun deleteAllLogs() = logDao.deleteAll()
 }

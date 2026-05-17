@@ -8,7 +8,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.json.JSONArray
-import org.json.JSONObject
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -171,6 +170,13 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
         viewModelScope.launch { repo.updateRemainingMl(id, ml) }
     }
 
+    fun clearAllData() {
+        viewModelScope.launch {
+            repo.deleteAllLogs()
+            repo.deleteAllPerfumes()
+        }
+    }
+
     fun addPerfumesFromText(text: String) {
         viewModelScope.launch {
             val perfumes = mutableListOf<Perfume>()
@@ -192,7 +198,7 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
                         addedDate = LocalDate.now().toString()
                     ))
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Falls JSON fehlschlägt, versuche CSV/TXT
                 // Versuch 2: CSV/TXT (Marke; Name; Größe; Füllstand; Preis)
                 text.lines().forEach { line ->

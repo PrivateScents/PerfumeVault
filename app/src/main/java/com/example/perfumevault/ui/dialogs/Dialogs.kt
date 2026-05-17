@@ -794,21 +794,8 @@ fun AddLogDialog(
     // 15 Sprüher = 1ml
     val maxSpraysFromVolume = (currentRemainingMl * 15.0).toInt().coerceIn(1, 50)
     
-    val weathers = listOf(
-        viewModel.t("☀️ Sonnig", "☀️ Sunny"),
-        viewModel.t("🌤 Bewölkt", "🌤 Cloudy"),
-        viewModel.t("🌧 Regen", "🌧 Rain"),
-        viewModel.t("❄️ Kalt", "❄️ Cold"),
-        viewModel.t("🌡 Heiß", "🌡 Hot")
-    )
-    val occasions = listOf(
-        viewModel.t("Alltag", "Daily"),
-        viewModel.t("Business", "Business"),
-        viewModel.t("Abend", "Evening"),
-        viewModel.t("Date", "Date"),
-        viewModel.t("Sport", "Sport"),
-        viewModel.t("Reise", "Travel")
-    )
+    val weathers = listOf("☀️ Sonnig", "🌤 Bewölkt", "🌧 Regen", "❄️ Kalt", "🌡 Heiß")
+    val occasions = listOf("Alltag", "Business", "Abend", "Date", "Sport", "Reise")
 
     var weather by remember { mutableStateOf(weathers.first()) }
     var occasion by remember { mutableStateOf(occasions.first()) }
@@ -888,13 +875,23 @@ fun AddLogDialog(
                 SectionLabel(viewModel.t("Wetter", "Weather"), isDarkMode)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(weathers) { w ->
-                        SelectableChip(w, selected = weather == w, isDarkMode = isDarkMode) { weather = w }
+                        SelectableChip(
+                            label = when(w) {
+                                "☀️ Sonnig" -> viewModel.t("☀️ Sonnig", "☀️ Sunny")
+                                "🌤 Bewölkt" -> viewModel.t("🌤 Bewölkt", "🌤 Cloudy")
+                                "🌧 Regen" -> viewModel.t("🌧 Regen", "🌧 Rain")
+                                "❄️ Kalt" -> viewModel.t("❄️ Kalt", "❄️ Cold")
+                                "🌡 Heiß" -> viewModel.t("🌡 Heiß", "🌡 Hot")
+                                else -> w
+                            }, 
+                            selected = weather == w, 
+                            isDarkMode = isDarkMode
+                        ) { weather = w }
                     }
                 }
 
                 SectionLabel(viewModel.t("Anlass", "Occasion"), isDarkMode)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val occasions = listOf("Alltag", "Business", "Abend", "Date", "Sport", "Reise")
                     items(occasions) { o ->
                         SelectableChip(
                             label = viewModel.translateOccasion(o), 
@@ -939,6 +936,22 @@ fun BulkAddDialog(
 ) {
     val isDarkMode by viewModel.isDarkMode.collectAsState()
     var text by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    val exampleJson = """
+    [
+      {
+        "brand": "Dior",
+        "name": "Sauvage",
+        "bottleSize": 100,
+        "remainingMl": 85.0,
+        "price": 95.0,
+        "rating": 8.5,
+        "type": "Frisch / Würzig",
+        "isWishlist": false
+      }
+    ]
+    """.trimIndent()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -956,18 +969,19 @@ fun BulkAddDialog(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     viewModel.t(
-                        "Format: Marke; Name; Größe; Füllstand; Preis\nODER ein JSON-Array mit Objekten.",
-                        "Format: Brand; Name; Size; Fill; Price\nOR a JSON array of objects."
+                        "Füge JSON oder Text (Marke; Name; Größe; Füllstand; Preis) ein.",
+                        "Paste JSON or text (Brand; Name; Size; Fill; Price)."
                     ),
                     fontSize = 12.sp,
                     color = (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.5f),
                     lineHeight = 16.sp
                 )
+                
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    modifier = Modifier.fillMaxWidth().height(250.dp),
-                    placeholder = { Text("[{\"brand\":\"Dior\",\"name\":\"Sauvage\"...}]", color = Color.Gray.copy(alpha = 0.5f)) },
+                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                    placeholder = { Text(viewModel.t("Hier einfügen...", "Paste here..."), color = Color.Gray.copy(alpha = 0.5f)) },
                     shape = RoundedCornerShape(24.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = if (isDarkMode) Color.White else Color.Black,
@@ -978,6 +992,19 @@ fun BulkAddDialog(
                         unfocusedBorderColor = (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.1f)
                     )
                 )
+
+                TextButton(
+                    onClick = {
+                        val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        val clip = android.content.ClipData.newPlainText("PerfumeVault Example", exampleJson)
+                        clipboard.setPrimaryClip(clip)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(16.dp), tint = AppleAccentBlue)
+                    Spacer(Modifier.width(8.dp))
+                    Text(viewModel.t("Beispiel JSON kopieren", "Copy Example JSON"), color = AppleAccentBlue, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
             }
         },
         confirmButton = {
@@ -1008,13 +1035,7 @@ fun EditLogDialog(
 ) {
     val isDarkMode by viewModel.isDarkMode.collectAsState()
     
-    val weathers = listOf(
-        viewModel.t("☀️ Sonnig", "☀️ Sunny"),
-        viewModel.t("🌤 Bewölkt", "🌤 Cloudy"),
-        viewModel.t("🌧 Regen", "🌧 Rain"),
-        viewModel.t("❄️ Kalt", "❄️ Cold"),
-        viewModel.t("🌡 Heiß", "🌡 Hot")
-    )
+    val weathers = listOf("☀️ Sonnig", "🌤 Bewölkt", "🌧 Regen", "❄️ Kalt", "🌡 Heiß")
     val occasions = listOf("Alltag", "Business", "Abend", "Date", "Sport", "Reise")
 
     var weather by remember { mutableStateOf(log.weather) }
@@ -1065,7 +1086,18 @@ fun EditLogDialog(
                 SectionLabel(viewModel.t("Wetter", "Weather"), isDarkMode)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(weathers) { w ->
-                        SelectableChip(w, selected = weather == w, isDarkMode = isDarkMode) { weather = w }
+                        SelectableChip(
+                            label = when(w) {
+                                "☀️ Sonnig" -> viewModel.t("☀️ Sonnig", "☀️ Sunny")
+                                "🌤 Bewölkt" -> viewModel.t("🌤 Bewölkt", "🌤 Cloudy")
+                                "🌧 Regen" -> viewModel.t("🌧 Regen", "🌧 Rain")
+                                "❄️ Kalt" -> viewModel.t("❄️ Kalt", "❄️ Cold")
+                                "🌡 Heiß" -> viewModel.t("🌡 Heiß", "🌡 Hot")
+                                else -> w
+                            }, 
+                            selected = weather == w, 
+                            isDarkMode = isDarkMode
+                        ) { weather = w }
                     }
                 }
 

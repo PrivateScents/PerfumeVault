@@ -4,6 +4,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -123,12 +124,18 @@ fun DetailScreen(
             // Bild
             if (currentPerfume.imageUrl.isNotEmpty()) {
                 item {
-                    GlassSurface(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(280.dp),
-                        alpha = if (isDarkMode) 0.3f else 0.4f,
-                        isDarkMode = isDarkMode
+                            .height(320.dp)
+                            .clip(RoundedCornerShape(32.dp))
+                            .background(if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.03f))
+                            .border(
+                                0.5.dp, 
+                                (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.08f),
+                                RoundedCornerShape(32.dp)
+                            ),
+                        contentAlignment = Alignment.Center
                     ) {
                         AsyncImage(
                             model = currentPerfume.imageUrl,

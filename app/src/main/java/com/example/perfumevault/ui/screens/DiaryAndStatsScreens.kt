@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +26,7 @@ import com.example.perfumevault.data.UsageLog
 import com.example.perfumevault.data.Perfume
 import com.example.perfumevault.ui.components.*
 import com.example.perfumevault.viewmodel.PerfumeViewModel
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -254,10 +256,10 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
     val totalValue by viewModel.totalValue.collectAsState()
     val allLogs by viewModel.allLogs.collectAsState()
     val mostUsed by viewModel.mostUsed.collectAsState()
-    val topRated by viewModel.unfilteredPerfumes.collectAsState()
+    val perfumes by viewModel.unfilteredPerfumes.collectAsState()
     val isDarkMode by viewModel.isDarkMode.collectAsState()
 
-    val top5 = remember(topRated) { topRated.sortedByDescending { it.rating }.take(5) }
+    val top5 = remember(perfumes) { perfumes.sortedByDescending { it.rating }.take(5) }
 
     if (totalCount == 0) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -265,14 +267,20 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                 Icon(
                     Icons.Default.BarChart, 
                     contentDescription = null, 
-                    modifier = Modifier.size(48.dp), 
-                    tint = (if (isDarkMode) Color.White else AppleTextSecondary).copy(alpha = 0.4f)
+                    modifier = Modifier.size(64.dp), 
+                    tint = (if (isDarkMode) Color.White else AppleTextSecondary).copy(alpha = 0.2f)
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
                     viewModel.t("Noch keine Daten", "No data yet"), 
                     color = if (isDarkMode) Color.White else AppleTextBlack, 
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                Text(
+                    viewModel.t("Füge Düfte hinzu, um Statistiken zu sehen.", "Add fragrances to see statistics."), 
+                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, 
+                    fontSize = 13.sp
                 )
             }
         }
@@ -281,82 +289,74 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 120.dp, start = 16.dp, end = 16.dp, top = 16.dp),
+        contentPadding = PaddingValues(bottom = 120.dp, start = 16.dp, end = 16.dp, top = 24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        // --- TITLE ---
         item {
             var isHeaderVisible by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) { isHeaderVisible = true }
             
-            Text(
-                viewModel.t("Statistiken", "Statistics"),
-                color = if (isDarkMode) Color.White else AppleTextBlack,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-1).sp,
-                modifier = Modifier.graphicsLayer {
-                    alpha = if (isHeaderVisible) 1f else 0f
-                    translationY = if (isHeaderVisible) 0f else -20f
-                }
-            )
+            Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                Text(
+                    viewModel.t("Statistiken", "Statistics"),
+                    color = if (isDarkMode) Color.White else AppleTextBlack,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-1.5).sp,
+                    modifier = Modifier.graphicsLayer {
+                        alpha = if (isHeaderVisible) 1f else 0f
+                        translationY = if (isHeaderVisible) 0f else -20f
+                    }
+                )
+                Text(
+                    viewModel.t("Ein tieferer Einblick in deine Sammlung", "A deep dive into your collection"),
+                    color = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.4f),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
 
+        // --- KEY METRICS GRID ---
         item {
-            GlassSurface(
-                modifier = Modifier.fillMaxWidth(), 
-                isDarkMode = isDarkMode,
-                alpha = if (isDarkMode) 0.3f else 0.4f
-            ) {
-                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        StatBox(Modifier.weight(1f), viewModel.t("Düfte", "Fragrances"), "$totalCount", isDarkMode)
-                        StatBox(Modifier.weight(1f), viewModel.t("Ø Rating", "Avg Rating"), "%.2f".format(avgRating), isDarkMode)
-                    }
-                    HorizontalDivider(color = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.08f), thickness = 0.5.dp)
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        StatBox(Modifier.weight(1f), viewModel.t("Wert", "Total Value"), "€%.2f".format(totalValue), isDarkMode)
-                        StatBox(Modifier.weight(1f), viewModel.t("Einträge", "Log Entries"), "${allLogs.size}", isDarkMode)
-                    }
-                }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                MetricCard(
+                    modifier = Modifier.weight(1f),
+                    label = viewModel.t("Düfte", "Fragrances"),
+                    value = "$totalCount",
+                    icon = Icons.Default.Inventory2,
+                    isDarkMode = isDarkMode
+                )
+                MetricCard(
+                    modifier = Modifier.weight(1f),
+                    label = viewModel.t("Ø Rating", "Avg Rating"),
+                    value = "%.1f".format(avgRating),
+                    icon = Icons.Default.Star,
+                    isDarkMode = isDarkMode
+                )
             }
         }
-
         item {
-            val perfumes = topRated
-            val lowStock = remember(perfumes) { perfumes.count { (it.remainingMl / it.bottleSize.toDouble()) < 0.1 } }
-            val mediumStock = remember(perfumes) { 
-                perfumes.count { 
-                    (it.remainingMl / it.bottleSize.toDouble()) in 0.1..0.2
-                } 
-            }
-            val goodStock = remember(perfumes) { perfumes.count { (it.remainingMl / it.bottleSize.toDouble()) >= 0.2 } }
-
-            GlassSurface(
-                modifier = Modifier.fillMaxWidth(),
-                isDarkMode = isDarkMode,
-                alpha = 0.5f,
-                cornerRadius = 24.dp
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        viewModel.t("Füllstand-Status", "Fill Level Status"), 
-                        color = if (isDarkMode) Color.White else AppleTextBlack, 
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        FillStatItem(viewModel.t("Voll", "Full"), goodStock, Color(0xFF4CAF50), isDarkMode)
-                        FillStatItem(viewModel.t("Wenig", "Low"), mediumStock, Color(0xFFFF9800), isDarkMode)
-                        FillStatItem(viewModel.t("Fast leer", "Near Empty"), lowStock, Color(0xFFF44336), isDarkMode)
-                    }
-                }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                MetricCard(
+                    modifier = Modifier.weight(1f),
+                    label = viewModel.t("Gesamtwert", "Total Value"),
+                    value = "€%.0f".format(totalValue),
+                    icon = Icons.Default.Payments,
+                    isDarkMode = isDarkMode
+                )
+                MetricCard(
+                    modifier = Modifier.weight(1f),
+                    label = viewModel.t("Einträge", "Log Entries"),
+                    value = "${allLogs.size}",
+                    icon = Icons.Default.History,
+                    isDarkMode = isDarkMode
+                )
             }
         }
 
+        // --- MOST WORN HERO ---
         if (mostUsed != null) {
             item {
                 SectionHeader(viewModel.t("🏆 Meistgetragen", "🏆 Most Worn"), isDarkMode)
@@ -366,40 +366,101 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                     onClick = { onPerfumeClick(mostUsed!!.id) },
                     isDarkMode = isDarkMode
                 ) {
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(20.dp)
-                    ) {
-                        Box(
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        // Background Decoration
+                        Icon(
+                            Icons.Default.WorkspacePremium,
+                            contentDescription = null,
+                            tint = AppleAccentBlue.copy(alpha = 0.05f),
                             modifier = Modifier
-                                .size(52.dp)
-                                .clip(CircleShape)
-                                .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f)),
-                            contentAlignment = Alignment.Center
+                                .size(140.dp)
+                                .align(Alignment.CenterEnd)
+                                .offset(x = 20.dp, y = 20.dp)
+                        )
+                        
+                        Row(
+                            modifier = Modifier.padding(24.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(20.dp)
                         ) {
-                            Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = if (isDarkMode) Color.White else AppleTextBlack, modifier = Modifier.size(26.dp))
-                        }
-                        Column {
-                            Text(mostUsed!!.brand.uppercase(), color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            Text(mostUsed!!.name, color = if (isDarkMode) Color.White else AppleTextBlack, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                            Box(
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(if (isDarkMode) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.04f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = AppleAccentBlue, modifier = Modifier.size(36.dp))
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    viewModel.t("Top Favorit", "Top Favorite"),
+                                    color = AppleAccentBlue,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.2.sp
+                                )
+                                Text(
+                                    mostUsed!!.name,
+                                    color = if (isDarkMode) Color.White else AppleTextBlack,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 24.sp,
+                                    lineHeight = 28.sp
+                                )
+                                Text(
+                                    mostUsed!!.brand.uppercase(),
+                                    color = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.5f),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
+        // --- FILL LEVEL STATUS ---
         item {
-            SectionHeader(viewModel.t("★ Top 5 Bewertungen", "★ Top 5 Rated"), isDarkMode)
+            SectionHeader(viewModel.t("📊 Füllstand Analyse", "📊 Fill Level Analysis"), isDarkMode)
             Spacer(Modifier.height(12.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            val perfumesList = perfumes
+            val lowStock = remember(perfumesList) { perfumesList.count { (it.remainingMl / it.bottleSize.toDouble()) < 0.1 } }
+            val mediumStock = remember(perfumesList) { perfumesList.count { (it.remainingMl / it.bottleSize.toDouble()) in 0.1..0.25 } }
+            val goodStock = remember(perfumesList) { perfumesList.count { (it.remainingMl / it.bottleSize.toDouble()) > 0.25 } }
+
+            GlassSurface(
+                modifier = Modifier.fillMaxWidth(),
+                isDarkMode = isDarkMode,
+                alpha = 0.5f,
+                cornerRadius = 28.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    FillStatItem(viewModel.t("Voll", "Full"), goodStock, Color(0xFF4CAF50), isDarkMode)
+                    FillStatItem(viewModel.t("Wenig", "Low"), mediumStock, Color(0xFFFF9800), isDarkMode)
+                    FillStatItem(viewModel.t("Leer", "Empty"), lowStock, Color(0xFFF44336), isDarkMode)
+                }
+            }
+        }
+
+        // --- TOP 5 RANKING ---
+        item {
+            SectionHeader(viewModel.t("⭐ Top 5 Bewertungen", "⭐ Top 5 Rated"), isDarkMode)
+            Spacer(Modifier.height(12.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 top5.forEachIndexed { index, perfume ->
                     var isCardVisible by remember { mutableStateOf(false) }
                     LaunchedEffect(Unit) { isCardVisible = true }
                     
                     val alpha by animateFloatAsState(
                         targetValue = if (isCardVisible) 1f else 0f,
-                        animationSpec = tween(600, delayMillis = index * 50),
+                        animationSpec = tween(600, delayMillis = index * 80),
                         label = "top5Alpha"
                     )
 
@@ -409,41 +470,81 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                         isDarkMode = isDarkMode
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 18.dp),
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(perfume.brand.uppercase(), color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Text(perfume.name, color = if (isDarkMode) Color.White else AppleTextBlack, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Text(
+                                    "${index + 1}",
+                                    color = (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.1f),
+                                    fontSize = 28.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                                Column {
+                                    Text(
+                                        perfume.name, 
+                                        color = if (isDarkMode) Color.White else AppleTextBlack, 
+                                        fontWeight = FontWeight.Bold, 
+                                        fontSize = 18.sp,
+                                        maxLines = 1
+                                    )
+                                    Text(
+                                        perfume.brand.uppercase(), 
+                                        color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, 
+                                        fontSize = 10.sp, 
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 1.sp
+                                    )
+                                }
                             }
-                            Text(
-                                "%.1f/10".format(perfume.rating),
-                                color = if (isDarkMode) Color.White else AppleTextBlack,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
-                            )
+                            
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(AppleAccentBlue.copy(alpha = 0.1f))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    "%.1f".format(perfume.rating),
+                                    color = AppleAccentBlue,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
+        // --- FRAGRANCE FAMILIES ---
         item {
-            SectionHeader(viewModel.t("🧬 Duftfamilien", "🧬 Fragrance Families"), isDarkMode)
-            Spacer(Modifier.height(16.dp))
-            val groupedTypes = remember(topRated) {
-                topRated.flatMap { it.type.split(" / ") }
+            SectionHeader(viewModel.t("🧬 Duft-DNA", "🧬 Fragrance DNA"), isDarkMode)
+            Spacer(Modifier.height(12.dp))
+            val groupedTypes = remember(perfumes) {
+                perfumes.flatMap { it.type.split(" / ") }
                     .filter { it.isNotBlank() }
                     .groupBy { it.trim() }
                     .mapValues { it.value.size }
                     .entries.sortedByDescending { it.value }
                     .take(6)
             }
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                groupedTypes.forEach { (type, count) ->
-                    val fraction = remember(count, topRated.size) { count.toFloat() / (topRated.size.coerceAtLeast(1)) }
-                    TypeBar(label = viewModel.translateFamily(type), fraction = fraction, count = count, isDarkMode = isDarkMode)
+            GlassSurface(
+                modifier = Modifier.fillMaxWidth(),
+                isDarkMode = isDarkMode,
+                alpha = 0.4f,
+                cornerRadius = 28.dp
+            ) {
+                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                    groupedTypes.forEach { (type, count) ->
+                        val fraction = remember(count, perfumes.size) { count.toFloat() / (perfumes.size.coerceAtLeast(1)) }
+                        TypeBar(label = viewModel.translateFamily(type), fraction = fraction, count = count, isDarkMode = isDarkMode)
+                    }
                 }
             }
         }
@@ -476,27 +577,43 @@ fun FillStatItem(label: String, count: Int, color: Color, isDarkMode: Boolean) {
 }
 
 @Composable
-fun StatBox(modifier: Modifier, label: String, value: String, isDarkMode: Boolean) {
+fun MetricCard(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isDarkMode: Boolean
+) {
     val numericValue = remember(value) { value.replace(",", ".").filter { it.isDigit() || it == '.' }.toDoubleOrNull() ?: 0.0 }
     val animatedValue by animateFloatAsState(
         targetValue = numericValue.toFloat(),
         animationSpec = tween(1500, easing = FastOutSlowInEasing),
-        label = "statCounter"
+        label = "metricCounter"
     )
 
     val displayValue = remember(animatedValue, value) {
-        if (value.contains("€")) {
-            "€%.2f".format(animatedValue)
-        } else if (value.contains(".")) {
-            "%.2f".format(animatedValue)
-        } else {
-            "${animatedValue.toInt()}"
-        }
+        if (value.contains("€")) "€%.0f".format(animatedValue)
+        else if (value.contains(".")) "%.1f".format(animatedValue)
+        else "${animatedValue.toInt()}"
     }
 
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(displayValue, fontWeight = FontWeight.Bold, fontSize = 26.sp, color = if (isDarkMode) Color.White else AppleTextBlack)
-        Text(label, fontSize = 11.sp, color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+    GlassSurface(
+        modifier = modifier,
+        isDarkMode = isDarkMode,
+        alpha = 0.4f,
+        cornerRadius = 28.dp
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Icon(
+                icon, 
+                contentDescription = null, 
+                tint = if (isDarkMode) Color.White.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.1f),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(displayValue, fontWeight = FontWeight.Black, fontSize = 28.sp, color = if (isDarkMode) Color.White else AppleTextBlack, letterSpacing = (-0.5).sp)
+            Text(label, fontSize = 11.sp, color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+        }
     }
 }
 
@@ -504,165 +621,153 @@ fun StatBox(modifier: Modifier, label: String, value: String, isDarkMode: Boolea
 fun SettingsScreen(viewModel: PerfumeViewModel) {
     val currentLang by viewModel.currentLanguage.collectAsState()
     val isDarkMode by viewModel.isDarkMode.collectAsState()
+    val perfumes by viewModel.unfilteredPerfumes.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
+    val scope = rememberCoroutineScope()
+    
     var showBulkImport by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.spacedBy(28.dp)
     ) {
-        Text(
-            viewModel.t("Einstellungen", "Settings"),
-            color = if (isDarkMode) Color.White else AppleTextBlack,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = (-1).sp
-        )
+        item {
+            Text(
+                viewModel.t("Einstellungen", "Settings"),
+                color = if (isDarkMode) Color.White else AppleTextBlack,
+                fontSize = 40.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-1.5).sp
+            )
+        }
 
-        // Dark Mode Toggle
-        GlassToggle(
-            label = viewModel.t("Dunkelmodus", "Dark Mode"),
-            checked = isDarkMode,
-            onCheckedChange = { viewModel.toggleDarkMode() },
-            isDarkMode = isDarkMode
-        )
-
-        // Language Selection
-        GlassSurface(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text(
-                    viewModel.t("Sprache / Language", "Language / Sprache"),
-                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+        // --- SECTION: APPEARANCE ---
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SectionHeader(viewModel.t("Erscheinungsbild", "Appearance"), isDarkMode)
+                GlassToggle(
+                    label = viewModel.t("Dunkelmodus", "Dark Mode"),
+                    checked = isDarkMode,
+                    onCheckedChange = { viewModel.toggleDarkMode() },
+                    isDarkMode = isDarkMode
                 )
-                Spacer(Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    val languages = listOf("de" to "Deutsch", "en" to "English")
-                    languages.forEach { (code, label) ->
-                        val selected = currentLang == code
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(50.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(if (selected) (if (isDarkMode) Color.White else AppleTextBlack) else (if (isDarkMode) Color.White.copy(alpha = 0.1f) else AppleTextBlack.copy(alpha = 0.05f)))
-                                .clickable { viewModel.setLanguage(code) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                label,
-                                color = if (selected) (if (isDarkMode) Color.Black else Color.White) else (if (isDarkMode) Color.White else AppleTextBlack),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
+            }
+        }
+
+        // --- SECTION: LANGUAGE ---
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SectionHeader(viewModel.t("Sprache", "Language"), isDarkMode)
+                GlassSurface(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
+                    Row(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("de" to "Deutsch", "en" to "English").forEach { (code, label) ->
+                            val selected = currentLang == code
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(44.dp)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(if (selected) (if (isDarkMode) Color.White else AppleTextBlack) else Color.Transparent)
+                                    .clickable { viewModel.setLanguage(code) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    label,
+                                    color = if (selected) (if (isDarkMode) Color.Black else Color.White) else (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.6f),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Datenverwaltung
-        GlassSurface(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text(
-                    viewModel.t("Datenverwaltung", "Data Management"),
-                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+        // --- SECTION: DATA MANAGEMENT ---
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SectionHeader(viewModel.t("Datenverwaltung", "Data Management"), isDarkMode)
+                
+                // Bulk Import
+                SettingsActionCard(
+                    label = viewModel.t("Bulk Import (JSON / TXT)", "Bulk Import (JSON / TXT)"),
+                    icon = Icons.Default.UploadFile,
+                    isDarkMode = isDarkMode,
+                    onClick = { showBulkImport = true }
                 )
-                Spacer(Modifier.height(16.dp))
-                
-                Button(
-                    onClick = { showBulkImport = true },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isDarkMode) Color.White else Color.Black,
-                        contentColor = if (isDarkMode) Color.Black else Color.White
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.UploadFile, contentDescription = null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(12.dp))
-                        Text(
-                            viewModel.t("Bulk Import (JSON / TXT)", "Bulk Import (JSON / TXT)"),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        )
-                    }
-                }
-                
-                Spacer(Modifier.height(8.dp))
-                
-                // Example JSON Action
-                val context = androidx.compose.ui.platform.LocalContext.current
-                TextButton(
+
+                // Export
+                SettingsActionCard(
+                    label = viewModel.t("Sammlung exportieren (JSON)", "Export Collection (JSON)"),
+                    icon = Icons.Default.Share,
+                    isDarkMode = isDarkMode,
                     onClick = {
-                        val exampleJson = """
-                        [
-                          {
-                            "brand": "Dior",
-                            "name": "Sauvage",
-                            "bottleSize": 100,
-                            "remainingMl": 85.0,
-                            "price": 95.0,
-                            "rating": 8.5,
-                            "type": "Frisch / Würzig",
-                            "isWishlist": false
-                          },
-                          {
-                            "brand": "Chanel",
-                            "name": "Bleu de Chanel",
-                            "bottleSize": 50,
-                            "remainingMl": 50.0,
-                            "isWishlist": true
-                          }
-                        ]
-                        """.trimIndent()
-                        
-                        try {
+                        scope.launch {
+                            val allPerfumes = perfumes
+                            val json = org.json.JSONArray().apply {
+                                allPerfumes.forEach { p ->
+                                    put(org.json.JSONObject().apply {
+                                        put("brand", p.brand)
+                                        put("name", p.name)
+                                        put("bottleSize", p.bottleSize)
+                                        put("remainingMl", p.remainingMl)
+                                        put("price", p.price)
+                                        put("rating", p.rating)
+                                        put("type", p.type)
+                                        put("isWishlist", p.isWishlist)
+                                    })
+                                }
+                            }.toString(2)
+                            
                             val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
                                 type = "text/plain"
-                                putExtra(android.content.Intent.EXTRA_TEXT, exampleJson)
-                                putExtra(android.content.Intent.EXTRA_SUBJECT, "PerfumeVault Example JSON")
+                                putExtra(android.content.Intent.EXTRA_TEXT, json)
                             }
-                            context.startActivity(android.content.Intent.createChooser(intent, "Example JSON"))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                            context.startActivity(android.content.Intent.createChooser(intent, "Export PerfumeVault"))
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp), tint = AppleAccentBlue)
-                        Spacer(Modifier.width(8.dp))
+                    }
+                )
+            }
+        }
+
+        // --- SECTION: ABOUT ---
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SectionHeader(viewModel.t("Über PerfumeVault", "About PerfumeVault"), isDarkMode)
+                GlassSurface(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Text(
-                            viewModel.t("Beispiel-JSON kopieren", "Copy Example JSON"),
+                            "PerfumeVault v1.4", 
+                            color = if (isDarkMode) Color.White else AppleTextBlack, 
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            viewModel.t("Deine digitale Vitrine für exklusive Düfte.", "Your digital cabinet for exclusive fragrances."),
+                            color = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.5f),
                             fontSize = 13.sp,
-                            color = AppleAccentBlue,
-                            fontWeight = FontWeight.Bold
+                            lineHeight = 18.sp
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            "© 2024 PerfumeVault Team",
+                            color = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.3f),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
             }
         }
-
-        GlassSurface(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text("PerfumeVault v1.3", color = if (isDarkMode) Color.White else AppleTextBlack, fontWeight = FontWeight.Bold)
-                Text(
-                    viewModel.t("Deine persönliche Duft-Sammlung", "Your personal fragrance collection"),
-                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary,
-                    fontSize = 12.sp
-                )
-            }
-        }
+        
+        item { Spacer(Modifier.height(100.dp)) }
     }
 
     if (showBulkImport) {
@@ -674,34 +779,99 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
 }
 
 @Composable
+fun SettingsActionCard(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isDarkMode: Boolean,
+    contentColor: Color? = null,
+    onClick: () -> Unit
+) {
+    val finalColor = contentColor ?: (if (isDarkMode) Color.White else AppleTextBlack)
+    
+    GlassSurface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        cornerRadius = 20.dp,
+        isDarkMode = isDarkMode,
+        alpha = if (isDarkMode) 0.2f else 0.3f
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(18.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(finalColor.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = null, tint = finalColor, modifier = Modifier.size(20.dp))
+            }
+            Text(
+                label,
+                modifier = Modifier.weight(1f),
+                color = finalColor,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp
+            )
+            Icon(
+                Icons.Default.ChevronRight, 
+                contentDescription = null, 
+                tint = (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.2f),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun TypeBar(label: String, fraction: Float, count: Int, isDarkMode: Boolean) {
     val animatedFraction by animateFloatAsState(
         targetValue = fraction,
         animationSpec = tween(1200, easing = FastOutSlowInEasing),
         label = "typeBar"
     )
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(label, color = if (isDarkMode) Color.White else AppleTextBlack, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text("$count", color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(
+                label, 
+                color = if (isDarkMode) Color.White else AppleTextBlack, 
+                fontSize = 14.sp, 
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                "$count", 
+                color = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.4f), 
+                fontSize = 12.sp, 
+                fontWeight = FontWeight.Bold
+            )
         }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f))
+                .height(6.dp)
+                .clip(CircleShape)
+                .background((if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.05f))
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(animatedFraction)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(if (isDarkMode) Color.White else AppleTextBlack)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(AppleAccentBlue.copy(alpha = 0.8f), AppleAccentBlue)
+                        )
+                    )
             )
         }
     }

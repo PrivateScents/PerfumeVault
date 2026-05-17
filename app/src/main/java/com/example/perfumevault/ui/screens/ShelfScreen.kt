@@ -3,6 +3,7 @@ package com.example.perfumevault.ui.screens
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -207,40 +208,44 @@ fun PerfumeCard(
     PressableGlassCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         onClick = onClick,
         onLongClick = onFavoriteToggle,
         isDarkMode = isDarkMode
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (perfume.imageUrl.isNotEmpty()) {
-                AsyncImage(
-                    model = perfume.imageUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background((if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.05f))
-                        .padding(4.dp),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.03f)),
-                    contentAlignment = Alignment.Center
-                ) {
+            // Image Container with subtle shadow and border
+            Box(
+                modifier = Modifier
+                    .size(90.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.03f))
+                    .border(
+                        0.5.dp, 
+                        (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.08f),
+                        RoundedCornerShape(20.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (perfume.imageUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = perfume.imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                    )
+                } else {
                     Icon(
                         imageVector = Icons.Default.Image,
                         contentDescription = null,
-                        tint = (if (isDarkMode) Color.White else AppleTextSecondary).copy(alpha = 0.3f),
-                        modifier = Modifier.size(32.dp)
+                        tint = (if (isDarkMode) Color.White else AppleTextSecondary).copy(alpha = 0.2f),
+                        modifier = Modifier.size(36.dp)
                     )
                 }
             }
@@ -248,30 +253,30 @@ fun PerfumeCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = perfume.brand.uppercase(),
-                    fontSize = 11.sp,
+                    fontSize = 10.sp,
                     color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                    letterSpacing = 1.2.sp
                 )
                 Text(
                     text = perfume.name,
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isDarkMode) Color.White else AppleTextBlack,
-                    lineHeight = 24.sp,
+                    lineHeight = 26.sp,
                     letterSpacing = (-0.5).sp
                 )
-                Spacer(Modifier.height(8.dp))
-                AnimatedRatingBar(rating = perfume.rating)
+                Spacer(Modifier.height(10.dp))
+                AnimatedRatingBar(rating = perfume.rating, isDarkMode = isDarkMode)
             }
 
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (perfume.isFavorite) {
                     Icon(
                         imageVector = Icons.Filled.Star,
                         contentDescription = null,
-                        tint = Color(0xFFFFCC00), // iOS Yellow
-                        modifier = Modifier.size(18.dp)
+                        tint = Color(0xFFFFCC00),
+                        modifier = Modifier.size(20.dp)
                     )
                 }
                 val percentage = (perfume.remainingMl / perfume.bottleSize.toDouble() * 100).toInt().coerceIn(0, 100)

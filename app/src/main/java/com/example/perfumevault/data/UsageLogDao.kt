@@ -43,4 +43,7 @@ interface UsageLogDao {
 
     @Query("DELETE FROM usage_logs WHERE perfumeId = :perfumeId")
     suspend fun deleteAllForPerfume(perfumeId: Int): Int
+
+    @Query("DELETE FROM usage_logs")
+    suspend fun deleteAll(): Int
 }
