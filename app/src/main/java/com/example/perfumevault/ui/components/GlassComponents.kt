@@ -17,59 +17,97 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.border
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Apple Modern Palette
+// Luxury Modern Palette
 val AppleTextBlack = Color(0xFF1D1D1F)
 val AppleTextSecondary = Color(0xFF86868B)
 val AppleAccentBlue = Color(0xFF007AFF)
-val AppleBackgroundLight = Color(0xFFF5F5F7)
-val AppleBackgroundDark = Color(0xFF000000)
+val GoldAccent = Color(0xFFD4AF37)
 
 @Composable
 fun GlassSurface(
     modifier: Modifier = Modifier,
-    cornerRadius: Dp = 32.dp,
-    alpha: Float = 0.4f,
-    isDarkMode: Boolean = false,
+    cornerRadius: Dp = 24.dp,
+    alpha: Float = 0.7f,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val baseColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White
-    val borderColor = if (isDarkMode) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f)
+    val baseColor = Color.White
+    val borderColor = Color.Black.copy(alpha = 0.08f)
     
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(cornerRadius))
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        baseColor.copy(alpha = alpha),
-                        baseColor.copy(alpha = alpha * 0.7f)
-                    )
-                )
-            )
+            .background(baseColor.copy(alpha = alpha))
     ) {
         Surface(
             modifier = Modifier.matchParentSize(),
             shape = RoundedCornerShape(cornerRadius),
             color = Color.Transparent,
-            border = BorderStroke(
-                0.5.dp, 
-                borderColor
-            )
+            border = BorderStroke(0.5.dp, borderColor)
         ) {}
         content()
     }
 }
 
 @Composable
+fun GlassCard(
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = spring(dampingRatio = 0.8f, stiffness = 300f),
+        label = "cardScale"
+    )
+
+    Box(
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clip(RoundedCornerShape(28.dp))
+            .then(
+                if (onClick != null) {
+                    Modifier.pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                isPressed = true
+                                tryAwaitRelease()
+                                isPressed = false
+                            },
+                            onTap = { onClick() },
+                            onLongPress = { onLongClick?.invoke() }
+                        )
+                    }
+                } else Modifier
+            )
+            .background(Color.White.copy(alpha = 0.92f))
+            .border(
+                width = 0.5.dp,
+                color = Color.Black.copy(alpha = 0.08f),
+                shape = RoundedCornerShape(28.dp)
+            )
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            content()
+        }
+    }
+}
+
+@Composable
 fun PressableGlassCard(
     modifier: Modifier = Modifier,
-    isDarkMode: Boolean = false,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
     content: @Composable BoxScope.() -> Unit
@@ -96,8 +134,7 @@ fun PressableGlassCard(
                 )
             },
         cornerRadius = 28.dp,
-        alpha = if (isDarkMode) 0.3f else 0.4f,
-        isDarkMode = isDarkMode
+        alpha = 0.4f
     ) {
         content()
     }
@@ -113,8 +150,8 @@ fun HighVisibilityButton(
 ) {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.94f else 1f,
-        animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f),
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(dampingRatio = 0.7f, stiffness = 500f),
         label = "btnScale"
     )
 
@@ -122,30 +159,34 @@ fun HighVisibilityButton(
         onClick = onClick,
         modifier = modifier
             .scale(scale)
-            .height(56.dp)
+            .height(54.dp)
             .pointerInput(Unit) {
                 detectTapGestures(onPress = { isPressed = true; tryAwaitRelease(); isPressed = false }, onTap = { onClick() })
             },
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(27.dp), // Pill shape
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 0.dp),
-        contentPadding = PaddingValues(horizontal = 24.dp)
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+        contentPadding = PaddingValues(horizontal = 32.dp)
     ) {
-        Text(text, fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.2).sp)
+        Text(
+            text.uppercase(), 
+            fontSize = 13.sp, 
+            fontWeight = FontWeight.ExtraBold, 
+            letterSpacing = 2.sp
+        )
     }
 }
 
 @Composable
 fun AnimatedRatingBar(
-    rating: Double, // Change to Double
+    rating: Double,
     modifier: Modifier = Modifier,
-    maxRating: Int = 10,
-    isDarkMode: Boolean = false
+    maxRating: Int = 10
 ) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         repeat(maxRating) { index ->
             val fillAmount = (rating - index).coerceIn(0.0, 1.0)
             val animatedAlpha by animateFloatAsState(
@@ -158,17 +199,16 @@ fun AnimatedRatingBar(
                 modifier = Modifier
                     .size(if (fillAmount >= 1.0) 7.dp else if (fillAmount > 0) 6.dp else 5.dp)
                     .clip(CircleShape)
-                    .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = animatedAlpha))
-                    .align(Alignment.CenterVertically)
+                    .background(AppleTextBlack.copy(alpha = animatedAlpha))
             )
         }
         
-        Spacer(Modifier.width(4.dp))
+        Spacer(Modifier.width(6.dp))
         Text(
             "%.1f".format(rating),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (isDarkMode) Color.White.copy(alpha = 0.6f) else AppleTextSecondary
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Black,
+            color = AppleAccentBlue
         )
     }
 }
@@ -179,45 +219,37 @@ fun GlassTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    hint: String? = null, // Add optional hint
+    hint: String? = null,
     modifier: Modifier = Modifier,
     singleLine: Boolean = true,
-    isDarkMode: Boolean = false,
     keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = {
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(label, fontWeight = FontWeight.Medium, fontSize = 13.sp)
-                if (hint != null) {
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        hint,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = if (isDarkMode) Color.White.copy(alpha = 0.4f) else AppleTextSecondary.copy(alpha = 0.7f),
-                        maxLines = 1
-                    )
-                }
-            }
-        },
-        modifier = modifier.fillMaxWidth(),
-        singleLine = singleLine,
-        keyboardOptions = keyboardOptions,
-        shape = RoundedCornerShape(18.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = (if (isDarkMode) Color.Black else Color.White).copy(alpha = 0.8f),
-            unfocusedContainerColor = (if (isDarkMode) Color.Black else Color.White).copy(alpha = 0.5f),
-            focusedBorderColor = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.3f),
-            unfocusedBorderColor = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.1f),
-            focusedTextColor = if (isDarkMode) Color.White else AppleTextBlack,
-            unfocusedTextColor = if (isDarkMode) Color.White else AppleTextBlack,
-            focusedLabelColor = if (isDarkMode) Color.White else AppleTextBlack,
-            unfocusedLabelColor = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            label.uppercase(), 
+            fontSize = 10.sp, 
+            fontWeight = FontWeight.ExtraBold, 
+            letterSpacing = 1.5.sp,
+            color = AppleTextBlack.copy(alpha = 0.7f)
         )
-    )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = singleLine,
+            keyboardOptions = keyboardOptions,
+            shape = RoundedCornerShape(16.dp),
+            placeholder = hint?.let { { Text(it, fontSize = 14.sp, color = Color.Gray.copy(alpha = 0.5f)) } },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.Black.copy(alpha = 0.03f),
+                unfocusedContainerColor = Color.Black.copy(alpha = 0.02f),
+                focusedBorderColor = AppleAccentBlue,
+                unfocusedBorderColor = Color.Black.copy(alpha = 0.15f),
+                focusedTextColor = AppleTextBlack,
+                unfocusedTextColor = AppleTextBlack
+            )
+        )
+    }
 }
 
 @Composable
@@ -241,44 +273,36 @@ fun StatChip(label: String, value: String) {
 fun SelectableChip(
     label: String,
     selected: Boolean,
-    isDarkMode: Boolean = false,
     onClick: () -> Unit
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (selected) 1.02f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessLow),
-        label = "chipScale"
-    )
-    
     Surface(
         onClick = onClick,
-        shape = CircleShape,
-        color = if (selected) (if (isDarkMode) Color.White else AppleTextBlack) else (if (isDarkMode) Color.White.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.6f)),
-        contentColor = if (selected) (if (isDarkMode) Color.Black else Color.White) else (if (isDarkMode) Color.White else AppleTextBlack),
-        modifier = Modifier.scale(scale),
-        border = if (!selected) BorderStroke(1.dp, (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.1f)) else null
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) AppleTextBlack else Color.Black.copy(alpha = 0.05f),
+        contentColor = if (selected) Color.White else AppleTextBlack.copy(alpha = 0.7f),
+        modifier = Modifier.height(38.dp),
+        border = if (!selected) BorderStroke(0.5.dp, Color.Black.copy(alpha = 0.1f)) else null
     ) {
-        Text(
-            label,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 16.dp)) {
+            Text(
+                label.uppercase(),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.2.sp
+            )
+        }
     }
 }
 
 @Composable
-fun LogChip(label: String, isDarkMode: Boolean = false) {
+fun LogChip(label: String) {
     Text(
         text = label,
         modifier = Modifier
-            .background(
-                if (isDarkMode) Color.White.copy(alpha = 0.1f) else AppleTextBlack.copy(alpha = 0.05f), 
-                RoundedCornerShape(8.dp)
-            )
+            .background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
             .padding(horizontal = 10.dp, vertical = 6.dp),
         fontSize = 11.sp,
-        color = if (isDarkMode) Color.White else AppleTextBlack,
+        color = AppleTextBlack,
         fontWeight = FontWeight.Bold
     )
 }
@@ -287,14 +311,12 @@ fun LogChip(label: String, isDarkMode: Boolean = false) {
 fun GlassToggle(
     label: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    isDarkMode: Boolean = false
+    onCheckedChange: (Boolean) -> Unit
 ) {
     GlassSurface(
         modifier = Modifier.fillMaxWidth(),
         cornerRadius = 20.dp,
-        alpha = if (isDarkMode) 0.2f else 0.4f,
-        isDarkMode = isDarkMode
+        alpha = 0.4f
     ) {
         Row(
             modifier = Modifier
@@ -305,7 +327,7 @@ fun GlassToggle(
         ) {
             Text(
                 label, 
-                color = if (isDarkMode) Color.White else AppleTextBlack, 
+                color = AppleTextBlack, 
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
@@ -315,8 +337,9 @@ fun GlassToggle(
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = AppleAccentBlue,
-                    uncheckedThumbColor = if (isDarkMode) Color.White.copy(alpha = 0.4f) else Color.Gray,
-                    uncheckedTrackColor = Color.Transparent
+                    uncheckedThumbColor = Color.Gray,
+                    uncheckedTrackColor = Color.Black.copy(alpha = 0.05f),
+                    uncheckedBorderColor = Color.Black.copy(alpha = 0.1f)
                 )
             )
         }

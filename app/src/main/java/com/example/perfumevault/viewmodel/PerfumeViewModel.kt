@@ -14,9 +14,6 @@ import java.time.LocalDate
 class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
 
     // --- UI State ---
-    private val _isDarkMode = MutableStateFlow(false)
-    val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
-
     private val _currentLanguage = MutableStateFlow("de")
     val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
 
@@ -32,10 +29,6 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
     private val _filterFavorites = MutableStateFlow(false)
     val filterFavorites: StateFlow<Boolean> = _filterFavorites.asStateFlow()
 
-    fun toggleDarkMode() {
-        _isDarkMode.value = !_isDarkMode.value
-    }
-
     // --- Localization Helper ---
     fun setLanguage(lang: String) {
         _currentLanguage.value = lang
@@ -45,41 +38,40 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
         return if (_currentLanguage.value == "de") de else en
     }
 
-    // --- Translation Helpers for Categories ---
-    fun translateFamily(family: String): String = when(family) {
-        "Zitrisch" -> t("Zitrisch", "Citrus")
-        "Frisch" -> t("Frisch", "Fresh")
-        "Grün" -> t("Grün", "Green")
-        "Aquatisch" -> t("Aquatisch", "Aquatic")
-        "Blumig" -> t("Blumig", "Floral")
-        "Fruchtig" -> t("Fruchtig", "Fruit")
-        "Würzig" -> t("Würzig", "Spicy")
-        "Holzig" -> t("Holzig", "Woody")
-        "Orientalisch" -> t("Orientalisch", "Oriental")
-        "Süß" -> t("Süß", "Sweet")
-        "Rauchig" -> t("Rauchig", "Smoky")
-        "Ledrig" -> t("Ledrig", "Leathery")
-        "Pudrig" -> t("Pudrig", "Powdery")
+    fun translateFamily(family: String): String = when(family.trim()) {
+        "Zitrisch", "Citrus" -> t("Zitrisch", "Citrus")
+        "Frisch", "Fresh" -> t("Frisch", "Fresh")
+        "Grün", "Green" -> t("Grün", "Green")
+        "Aquatisch", "Aquatic" -> t("Aquatisch", "Aquatic")
+        "Blumig", "Floral" -> t("Blumig", "Floral")
+        "Fruchtig", "Fruit" -> t("Fruchtig", "Fruit")
+        "Würzig", "Spicy" -> t("Würzig", "Spicy")
+        "Holzig", "Woody" -> t("Holzig", "Woody")
+        "Orientalisch", "Oriental" -> t("Orientalisch", "Oriental")
+        "Süß", "Sweet" -> t("Süß", "Sweet")
+        "Rauchig", "Smoky" -> t("Rauchig", "Smoky")
+        "Ledrig", "Leathery" -> t("Ledrig", "Leathery")
+        "Pudrig", "Powdery" -> t("Pudrig", "Powdery")
         "Gourmand" -> t("Gourmand", "Gourmand")
         else -> family
     }
 
-    fun translateSeason(season: String): String = when(season) {
-        "Alle" -> t("Alle", "All")
-        "Frühling" -> t("Frühling", "Spring")
-        "Sommer" -> t("Sommer", "Summer")
-        "Herbst" -> t("Herbst", "Autumn")
+    fun translateSeason(season: String): String = when(season.trim()) {
+        "Alle", "All" -> t("Alle", "All")
+        "Frühling", "Spring" -> t("Frühling", "Spring")
+        "Sommer", "Summer" -> t("Sommer", "Summer")
+        "Herbst", "Autumn" -> t("Herbst", "Autumn")
         "Winter" -> t("Winter", "Winter")
         else -> season
     }
 
-    fun translateOccasion(occasion: String): String = when(occasion) {
-        "Alle" -> t("Alle", "All")
-        "Alltag" -> t("Alltag", "Daily")
+    fun translateOccasion(occasion: String): String = when(occasion.trim()) {
+        "Alle", "All" -> t("Alle", "All")
+        "Alltag", "Daily" -> t("Alltag", "Daily")
         "Business" -> t("Business", "Business")
-        "Abend" -> t("Abend", "Evening")
+        "Abend", "Evening" -> t("Abend", "Evening")
         "Sport" -> t("Sport", "Sport")
-        "Reise" -> t("Reise", "Travel")
+        "Reise", "Travel" -> t("Reise", "Travel")
         "Date" -> t("Date", "Date")
         else -> occasion
     }

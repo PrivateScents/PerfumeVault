@@ -74,7 +74,6 @@ private val NAV_TABS = listOf(
 @Composable
 fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
     val selectedTab by viewModel.selectedTab.collectAsState()
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
     viewModel.currentLanguage.collectAsState() // Observe for recomposition
     var showAddDialog by remember { mutableStateOf(false) }
     var selectedPerfumeId by remember { mutableStateOf<Int?>(null) }
@@ -104,28 +103,20 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
-                drawRect(if (isDarkMode) Color(0xFF000000) else Color(0xFFF2F2F7))
                 val cx = size.width
                 val cy = size.height
-
-                // Subtle gradients
+                
+                // Pure Light Background
+                drawRect(Color(0xFFF9F9FB))
+                
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf((if (isDarkMode) Color.White else Color(0xFFE5E5EA)).copy(alpha = if (isDarkMode) 0.05f else 0.6f), Color.Transparent),
-                        center = Offset(cx * 0.1f, cy * 0.2f),
-                        radius = cx * 1.5f
+                        colors = listOf(Color(0xFFE8E8ED).copy(alpha = 0.5f), Color.Transparent),
+                        center = Offset(cx * 0.8f, cy * 0.2f),
+                        radius = cx
                     ),
-                    radius = cx * 1.5f,
-                    center = Offset(cx * 0.1f, cy * 0.2f)
-                )
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf((if (isDarkMode) Color.White else Color(0xFFD1D1D6)).copy(alpha = if (isDarkMode) 0.05f else 0.4f), Color.Transparent),
-                        center = Offset(cx * 0.8f, cy * 0.8f),
-                        radius = cx * 1.2f
-                    ),
-                    radius = cx * 1.2f,
-                    center = Offset(cx * 0.8f, cy * 0.8f)
+                    radius = cx,
+                    center = Offset(cx * 0.8f, cy * 0.2f)
                 )
             }
     ) {
@@ -144,14 +135,18 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                 topBar = {
                     TopAppBar(
                         title = {
-                            Column {
-                                Text(
-                                    "PerfumeVault",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 26.sp,
-                                    color = if (isDarkMode) Color.White else AppleTextBlack,
-                                    letterSpacing = (-0.5).sp
-                                )
+                            var isVisible by remember { mutableStateOf(false) }
+                            LaunchedEffect(selectedTab) {
+                                isVisible = false
+                                kotlinx.coroutines.delay(50)
+                                isVisible = true
+                            }
+                            
+                            AnimatedVisibility(
+                                visible = isVisible,
+                                enter = fadeIn() + slideInVertically { it / 2 },
+                                exit = fadeOut()
+                            ) {
                                 Text(
                                     when (selectedTab) {
                                         0 -> viewModel.t("Sammlung", "Collection")
@@ -159,30 +154,26 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                         2 -> viewModel.t("Tagebuch", "Diary")
                                         3 -> viewModel.t("Statistiken", "Statistics")
                                         else -> viewModel.t("Einstellungen", "Settings")
-                                    },
-                                    fontSize = 12.sp,
-                                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary,
-                                    fontWeight = FontWeight.Bold
+                                    }.uppercase(),
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 14.sp,
+                                    color = AppleTextBlack.copy(alpha = 0.6f),
+                                    letterSpacing = 3.sp
                                 )
                             }
                         },
                         actions = {
                             AnimatedVisibility(selectedTab == 0 || selectedTab == 1) {
-                                IconButton(onClick = { showAddDialog = true }) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(42.dp)
-                                            .clip(RoundedCornerShape(14.dp))
-                                            .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Add,
-                                            contentDescription = viewModel.t("Hinzufügen", "Add"),
-                                            tint = if (isDarkMode) Color.White else AppleTextBlack,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
+                                IconButton(
+                                    onClick = { showAddDialog = true },
+                                    modifier = Modifier.padding(end = 12.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Add,
+                                        contentDescription = viewModel.t("Hinzufügen", "Add"),
+                                        tint = AppleTextBlack,
+                                        modifier = Modifier.size(28.dp)
+                                    )
                                 }
                             }
                         },
@@ -198,8 +189,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                         GlassSurface(
                             modifier = Modifier.fillMaxWidth().height(72.dp),
                             cornerRadius = 36.dp,
-                            alpha = if (isDarkMode) 0.35f else 0.6f,
-                            isDarkMode = isDarkMode
+                            alpha = 0.6f
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxSize(),
@@ -224,7 +214,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                                 imageVector = tab.icon,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(26.dp),
-                                                tint = if (selected) (if (isDarkMode) Color.White else AppleTextBlack) else (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.3f)
+                                                tint = if (selected) AppleTextBlack else AppleTextBlack.copy(alpha = 0.3f)
                                             )
                                             if (selected) {
                                                 Spacer(Modifier.height(4.dp))
@@ -232,7 +222,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                                     Modifier
                                                         .size(4.dp)
                                                         .clip(CircleShape)
-                                                        .background(if (isDarkMode) Color.White else AppleTextBlack)
+                                                        .background(AppleTextBlack)
                                                 )
                                             }
                                         }

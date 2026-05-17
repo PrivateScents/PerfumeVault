@@ -87,8 +87,7 @@ fun AddPerfumeDialog(
              isWishlist: Boolean) -> Unit,
     initialIsWishlist: Boolean = false
 ) {
-    viewModel.currentLanguage.collectAsState() // Observe for recomposition
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
+    viewModel.currentLanguage.collectAsState() 
 
     var name by remember { mutableStateOf("") }
     var brand by remember { mutableStateOf("") }
@@ -156,12 +155,12 @@ fun AddPerfumeDialog(
         modifier = Modifier
             .fillMaxWidth(0.95f)
             .padding(vertical = 24.dp),
-        containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White,
+        containerColor = Color.White,
         shape = RoundedCornerShape(32.dp),
         title = {
             Text(
                 if (initialIsWishlist) viewModel.t("Neuer Wunsch", "New Wish") else viewModel.t("Neuer Duft", "New Fragrance"),
-                color = if (isDarkMode) Color.White else AppleTextBlack,
+                color = AppleTextBlack,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
                 letterSpacing = (-0.5).sp
@@ -175,21 +174,20 @@ fun AddPerfumeDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (errorMessage != null) {
-                    ErrorBanner(errorMessage!!, isDarkMode)
+                    ErrorBanner(errorMessage!!)
                 }
 
-                GlassTextField(value = brand, onValueChange = { brand = it }, label = viewModel.t("Marke", "Brand"), isDarkMode = isDarkMode)
-                GlassTextField(value = name, onValueChange = { name = it }, label = viewModel.t("Name", "Name"), isDarkMode = isDarkMode)
+                GlassTextField(value = brand, onValueChange = { brand = it }, label = viewModel.t("Marke", "Brand"))
+                GlassTextField(value = name, onValueChange = { name = it }, label = viewModel.t("Name", "Name"))
 
-                SectionLabel(viewModel.t("Duftfamilie", "Fragrance Family"), isDarkMode)
+                SectionLabel(viewModel.t("Duftfamilie", "Fragrance Family"))
                 val selectedFamilies = type.split(" / ").filter { it.isNotBlank() }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(FRAGRANCE_FAMILIES) { family ->
                         val isSelected = selectedFamilies.contains(family)
                         SelectableChip(
                             label = viewModel.translateFamily(family), 
-                            selected = isSelected, 
-                            isDarkMode = isDarkMode
+                            selected = isSelected
                         ) {
                             val newList = if (isSelected) {
                                 selectedFamilies.filter { it != family }
@@ -202,14 +200,14 @@ fun AddPerfumeDialog(
                 }
                 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SectionLabel(viewModel.t("Bild", "Image"), isDarkMode)
+                    SectionLabel(viewModel.t("Bild", "Image"))
                     if (imageUrl.isNotEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(150.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.03f))
+                                .background(AppleTextBlack.copy(alpha = 0.03f))
                         ) {
                             AsyncImage(
                                 model = imageUrl,
@@ -221,7 +219,7 @@ fun AddPerfumeDialog(
                                 onClick = { imageUrl = "" },
                                 modifier = Modifier.align(Alignment.TopEnd)
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = null, tint = if (isDarkMode) Color.White else AppleTextBlack)
+                                Icon(Icons.Default.Close, contentDescription = null, tint = AppleTextBlack)
                             }
                         }
                     }
@@ -230,8 +228,7 @@ fun AddPerfumeDialog(
                         GlassSurface(
                             modifier = Modifier.weight(1f),
                             alpha = 0.4f,
-                            cornerRadius = 12.dp,
-                            isDarkMode = isDarkMode
+                            cornerRadius = 12.dp
                         ) {
                             Row(
                                 modifier = Modifier
@@ -240,16 +237,15 @@ fun AddPerfumeDialog(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp), tint = if (isDarkMode) Color.White else AppleTextBlack)
+                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp), tint = AppleTextBlack)
                                 Spacer(Modifier.width(8.dp))
-                                Text(viewModel.t("Galerie", "Gallery"), fontSize = 12.sp, color = if (isDarkMode) Color.White else AppleTextBlack)
+                                Text(viewModel.t("Galerie", "Gallery"), fontSize = 12.sp, color = AppleTextBlack)
                             }
                         }
                         GlassSurface(
                             modifier = Modifier.weight(1f),
                             alpha = 0.4f,
-                            cornerRadius = 12.dp,
-                            isDarkMode = isDarkMode
+                            cornerRadius = 12.dp
                         ) {
                             Row(
                                 modifier = Modifier
@@ -260,17 +256,16 @@ fun AddPerfumeDialog(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = if (isDarkMode) Color.White else AppleTextBlack)
+                                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = AppleTextBlack)
                                 Spacer(Modifier.width(8.dp))
-                                Text(viewModel.t("Kamera", "Camera"), fontSize = 12.sp, color = if (isDarkMode) Color.White else AppleTextBlack)
+                                Text(viewModel.t("Kamera", "Camera"), fontSize = 12.sp, color = AppleTextBlack)
                             }
                         }
                     }
                     GlassTextField(
                         value = if (imageUrl.startsWith("http")) imageUrl else "",
                         onValueChange = { imageUrl = it },
-                        label = viewModel.t("Bild URL", "Image URL"),
-                        isDarkMode = isDarkMode
+                        label = viewModel.t("Bild URL", "Image URL")
                     )
                 }
 
@@ -281,8 +276,7 @@ fun AddPerfumeDialog(
                         label = viewModel.t("Rating", "Rating"),
                         hint = "(1.0–10.0)",
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        isDarkMode = isDarkMode
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
                     GlassTextField(
                         value = priceStr,
@@ -290,8 +284,7 @@ fun AddPerfumeDialog(
                         label = viewModel.t("Preis", "Price"),
                         hint = "(€)",
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        isDarkMode = isDarkMode
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
                 }
 
@@ -302,8 +295,7 @@ fun AddPerfumeDialog(
                         label = viewModel.t("Größe", "Size"),
                         hint = "(ml)",
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        isDarkMode = isDarkMode
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                     GlassTextField(
                         value = remainingMlStr,
@@ -311,38 +303,35 @@ fun AddPerfumeDialog(
                         label = viewModel.t("Füllstand", "Remaining"),
                         hint = "(ml)",
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        isDarkMode = isDarkMode
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
                 }
 
-                SectionLabel(viewModel.t("Konzentration", "Concentration"), isDarkMode)
+                SectionLabel(viewModel.t("Konzentration", "Concentration"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(CONCENTRATIONS) { c ->
-                        SelectableChip(c, selected = concentration == c, isDarkMode = isDarkMode) { concentration = c }
+                        SelectableChip(c, selected = concentration == c) { concentration = c }
                     }
                 }
 
-                SectionLabel(viewModel.t("Jahreszeit", "Season"), isDarkMode)
+                SectionLabel(viewModel.t("Jahreszeit", "Season"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     val seasons = listOf("Alle", "Frühling", "Sommer", "Herbst", "Winter")
                     items(seasons) { s ->
                         SelectableChip(
                             label = viewModel.translateSeason(s), 
-                            selected = season == s, 
-                            isDarkMode = isDarkMode
+                            selected = season == s
                         ) { season = s }
                     }
                 }
 
-                SectionLabel(viewModel.t("Anlass", "Occasion"), isDarkMode)
+                SectionLabel(viewModel.t("Anlass", "Occasion"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     val occasions = listOf("Alle", "Alltag", "Business", "Abend", "Sport", "Reise")
                     items(occasions) { o ->
                         SelectableChip(
                             label = viewModel.translateOccasion(o), 
-                            selected = occasion == o, 
-                            isDarkMode = isDarkMode
+                            selected = occasion == o
                         ) { occasion = o }
                     }
                 }
@@ -352,8 +341,7 @@ fun AddPerfumeDialog(
                     onValueChange = { notes = it },
                     label = viewModel.t("Notizen", "Notes"),
                     singleLine = false,
-                    modifier = Modifier.height(100.dp),
-                    isDarkMode = isDarkMode
+                    modifier = Modifier.height(100.dp)
                 )
 
                 if (!initialIsWishlist) {
@@ -361,7 +349,7 @@ fun AddPerfumeDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f))
+                            .background(AppleTextBlack.copy(alpha = 0.05f))
                             .clickable { isWishlist = !isWishlist }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -369,7 +357,7 @@ fun AddPerfumeDialog(
                     ) {
                         Text(
                             viewModel.t("Auf Merkliste setzen", "Add to Wishlist"),
-                            color = if (isDarkMode) Color.White else AppleTextBlack,
+                            color = AppleTextBlack,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
@@ -377,8 +365,10 @@ fun AddPerfumeDialog(
                             checked = isWishlist,
                             onCheckedChange = { isWishlist = it },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = if (isDarkMode) Color.Black else Color.White,
-                                checkedTrackColor = if (isDarkMode) Color.White else AppleTextBlack
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = AppleAccentBlue,
+                                uncheckedThumbColor = Color.Gray,
+                                uncheckedTrackColor = Color.Black.copy(alpha = 0.05f)
                             )
                         )
                     }
@@ -409,13 +399,13 @@ fun AddPerfumeDialog(
                     }
                 },
                 modifier = Modifier.padding(bottom = 12.dp),
-                containerColor = if (isDarkMode) Color.White else AppleTextBlack,
-                contentColor = if (isDarkMode) Color.Black else Color.White
+                containerColor = AppleTextBlack,
+                contentColor = Color.White
             )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(viewModel.t("Abbrechen", "Cancel"), color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, fontWeight = FontWeight.SemiBold)
+                Text(viewModel.t("Abbrechen", "Cancel"), color = AppleTextSecondary, fontWeight = FontWeight.SemiBold)
             }
         }
     )
@@ -433,8 +423,7 @@ fun EditPerfumeDialog(
     onDismiss: () -> Unit,
     onSave: (com.example.perfumevault.data.Perfume) -> Unit
 ) {
-    viewModel.currentLanguage.collectAsState() // Observe for recomposition
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
+    viewModel.currentLanguage.collectAsState() 
 
     var name by remember { mutableStateOf(perfume.name) }
     var brand by remember { mutableStateOf(perfume.brand) }
@@ -501,12 +490,12 @@ fun EditPerfumeDialog(
         modifier = Modifier
             .fillMaxWidth(0.95f)
             .padding(vertical = 24.dp),
-        containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White,
+        containerColor = Color.White,
         shape = RoundedCornerShape(32.dp),
         title = {
             Text(
                 viewModel.t("Bearbeiten", "Edit"),
-                color = if (isDarkMode) Color.White else AppleTextBlack,
+                color = AppleTextBlack,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
                 letterSpacing = (-0.5).sp
@@ -520,21 +509,20 @@ fun EditPerfumeDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (errorMessage != null) {
-                    ErrorBanner(errorMessage!!, isDarkMode)
+                    ErrorBanner(errorMessage!!)
                 }
 
-                GlassTextField(value = brand, onValueChange = { brand = it }, label = viewModel.t("Marke", "Brand"), isDarkMode = isDarkMode)
-                GlassTextField(value = name, onValueChange = { name = it }, label = viewModel.t("Name", "Name"), isDarkMode = isDarkMode)
+                GlassTextField(value = brand, onValueChange = { brand = it }, label = viewModel.t("Marke", "Brand"))
+                GlassTextField(value = name, onValueChange = { name = it }, label = viewModel.t("Name", "Name"))
 
-                SectionLabel(viewModel.t("Duftfamilie", "Fragrance Family"), isDarkMode)
+                SectionLabel(viewModel.t("Duftfamilie", "Fragrance Family"))
                 val selectedFamilies = type.split(" / ").filter { it.isNotBlank() }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(FRAGRANCE_FAMILIES) { family ->
                         val isSelected = selectedFamilies.contains(family)
                         SelectableChip(
                             label = viewModel.translateFamily(family), 
-                            selected = isSelected, 
-                            isDarkMode = isDarkMode
+                            selected = isSelected
                         ) {
                             val newList = if (isSelected) {
                                 selectedFamilies.filter { it != family }
@@ -547,14 +535,14 @@ fun EditPerfumeDialog(
                 }
                 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SectionLabel(viewModel.t("Bild", "Image"), isDarkMode)
+                    SectionLabel(viewModel.t("Bild", "Image"))
                     if (imageUrl.isNotEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(150.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.03f))
+                                .background(AppleTextBlack.copy(alpha = 0.03f))
                         ) {
                             AsyncImage(
                                 model = imageUrl,
@@ -566,7 +554,7 @@ fun EditPerfumeDialog(
                                 onClick = { imageUrl = "" },
                                 modifier = Modifier.align(Alignment.TopEnd)
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = null, tint = if (isDarkMode) Color.White else AppleTextBlack)
+                                Icon(Icons.Default.Close, contentDescription = null, tint = AppleTextBlack)
                             }
                         }
                     }
@@ -575,8 +563,7 @@ fun EditPerfumeDialog(
                         GlassSurface(
                             modifier = Modifier.weight(1f),
                             alpha = 0.4f,
-                            cornerRadius = 12.dp,
-                            isDarkMode = isDarkMode
+                            cornerRadius = 12.dp
                         ) {
                             Row(
                                 modifier = Modifier
@@ -585,16 +572,15 @@ fun EditPerfumeDialog(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp), tint = if (isDarkMode) Color.White else AppleTextBlack)
+                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp), tint = AppleTextBlack)
                                 Spacer(Modifier.width(8.dp))
-                                Text(viewModel.t("Galerie", "Gallery"), fontSize = 12.sp, color = if (isDarkMode) Color.White else AppleTextBlack)
+                                Text(viewModel.t("Galerie", "Gallery"), fontSize = 12.sp, color = AppleTextBlack)
                             }
                         }
                         GlassSurface(
                             modifier = Modifier.weight(1f),
                             alpha = 0.4f,
-                            cornerRadius = 12.dp,
-                            isDarkMode = isDarkMode
+                            cornerRadius = 12.dp
                         ) {
                             Row(
                                 modifier = Modifier
@@ -605,17 +591,16 @@ fun EditPerfumeDialog(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = if (isDarkMode) Color.White else AppleTextBlack)
+                                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = AppleTextBlack)
                                 Spacer(Modifier.width(8.dp))
-                                Text(viewModel.t("Kamera", "Camera"), fontSize = 12.sp, color = if (isDarkMode) Color.White else AppleTextBlack)
+                                Text(viewModel.t("Kamera", "Camera"), fontSize = 12.sp, color = AppleTextBlack)
                             }
                         }
                     }
                     GlassTextField(
                         value = if (imageUrl.startsWith("http")) imageUrl else "",
                         onValueChange = { imageUrl = it },
-                        label = viewModel.t("Bild URL", "Image URL"),
-                        isDarkMode = isDarkMode
+                        label = viewModel.t("Bild URL", "Image URL")
                     )
                 }
 
@@ -626,8 +611,7 @@ fun EditPerfumeDialog(
                         label = viewModel.t("Rating", "Rating"),
                         hint = "(1.0–10.0)",
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        isDarkMode = isDarkMode
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
                     GlassTextField(
                         value = priceStr,
@@ -635,8 +619,7 @@ fun EditPerfumeDialog(
                         label = viewModel.t("Preis", "Price"),
                         hint = "(€)",
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        isDarkMode = isDarkMode
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
                 }
 
@@ -647,8 +630,7 @@ fun EditPerfumeDialog(
                         label = viewModel.t("Größe", "Size"),
                         hint = "(ml)",
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        isDarkMode = isDarkMode
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                     GlassTextField(
                         value = remainingMlStr,
@@ -656,44 +638,36 @@ fun EditPerfumeDialog(
                         label = viewModel.t("Füllstand", "Remaining"),
                         hint = "(ml)",
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        isDarkMode = isDarkMode
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
                 }
 
-                SectionLabel(viewModel.t("Konzentration", "Concentration"), isDarkMode)
+                SectionLabel(viewModel.t("Konzentration", "Concentration"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(CONCENTRATIONS) { c ->
                         SelectableChip(c, selected = concentration == c) { concentration = c }
                     }
                 }
 
-                SectionLabel(viewModel.t("Jahreszeit", "Season"), isDarkMode)
+                SectionLabel(viewModel.t("Jahreszeit", "Season"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val seasons = listOf(
-                        viewModel.t("Alle", "All"),
-                        viewModel.t("Frühling", "Spring"),
-                        viewModel.t("Sommer", "Summer"),
-                        viewModel.t("Herbst", "Autumn"),
-                        viewModel.t("Winter", "Winter")
-                    )
+                    val seasons = listOf("Alle", "Frühling", "Sommer", "Herbst", "Winter")
                     items(seasons) { s ->
-                        SelectableChip(s, selected = season == s) { season = s }
+                        SelectableChip(
+                            label = viewModel.translateSeason(s), 
+                            selected = season == s
+                        ) { season = s }
                     }
                 }
 
-                SectionLabel(viewModel.t("Anlass", "Occasion"), isDarkMode)
+                SectionLabel(viewModel.t("Anlass", "Occasion"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val occasions = listOf(
-                        viewModel.t("Alle", "All"),
-                        viewModel.t("Alltag", "Daily"),
-                        viewModel.t("Business", "Business"),
-                        viewModel.t("Abend", "Evening"),
-                        viewModel.t("Sport", "Sport"),
-                        viewModel.t("Reise", "Travel")
-                    )
+                    val occasions = listOf("Alle", "Alltag", "Business", "Abend", "Sport", "Reise")
                     items(occasions) { o ->
-                        SelectableChip(o, selected = occasion == o) { occasion = o }
+                        SelectableChip(
+                            label = viewModel.translateOccasion(o), 
+                            selected = occasion == o
+                        ) { occasion = o }
                     }
                 }
 
@@ -702,15 +676,14 @@ fun EditPerfumeDialog(
                     onValueChange = { notes = it },
                     label = viewModel.t("Notizen", "Notes"),
                     singleLine = false,
-                    modifier = Modifier.height(100.dp),
-                    isDarkMode = isDarkMode
+                    modifier = Modifier.height(100.dp)
                 )
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f))
+                        .background(AppleTextBlack.copy(alpha = 0.05f))
                         .clickable { isWishlist = !isWishlist }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -718,7 +691,7 @@ fun EditPerfumeDialog(
                 ) {
                     Text(
                         viewModel.t("Auf Merkliste setzen", "Add to Wishlist"),
-                        color = if (isDarkMode) Color.White else AppleTextBlack,
+                        color = AppleTextBlack,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
@@ -726,8 +699,10 @@ fun EditPerfumeDialog(
                         checked = isWishlist,
                         onCheckedChange = { isWishlist = it },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = if (isDarkMode) Color.Black else Color.White,
-                            checkedTrackColor = if (isDarkMode) Color.White else AppleTextBlack
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = AppleAccentBlue,
+                            uncheckedThumbColor = Color.Gray,
+                            uncheckedTrackColor = Color.Black.copy(alpha = 0.05f)
                         )
                     )
                 }
@@ -768,13 +743,13 @@ fun EditPerfumeDialog(
                     }
                 },
                 modifier = Modifier.padding(bottom = 12.dp),
-                containerColor = if (isDarkMode) Color.White else AppleTextBlack,
-                contentColor = if (isDarkMode) Color.Black else Color.White
+                containerColor = AppleTextBlack,
+                contentColor = Color.White
             )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(viewModel.t("Abbrechen", "Cancel"), color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, fontWeight = FontWeight.SemiBold)
+                Text(viewModel.t("Abbrechen", "Cancel"), color = AppleTextSecondary, fontWeight = FontWeight.SemiBold)
             }
         }
     )
@@ -788,8 +763,7 @@ fun AddLogDialog(
     onDismiss: () -> Unit,
     onSave: (occasion: String, weather: String, note: String, sprays: Int) -> Unit
 ) {
-    viewModel.currentLanguage.collectAsState() // Observe for recomposition
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
+    viewModel.currentLanguage.collectAsState() 
     
     // 15 Sprüher = 1ml
     val maxSpraysFromVolume = (currentRemainingMl * 15.0).toInt().coerceIn(1, 50)
@@ -804,12 +778,12 @@ fun AddLogDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White,
+        containerColor = Color.White,
         shape = RoundedCornerShape(32.dp),
         title = {
             Text(
-                "${viewModel.t("Duft des Tages", "SotD")}: $perfumeName",
-                color = if (isDarkMode) Color.White else AppleTextBlack, 
+                "${viewModel.t("Duft des Tages", "SotD")}: $perfumeName", 
+                color = AppleTextBlack, 
                 fontWeight = FontWeight.Bold, 
                 fontSize = 24.sp,
                 letterSpacing = (-0.5).sp
@@ -820,7 +794,7 @@ fun AddLogDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Column {
-                    SectionLabel(viewModel.t("Sprühstöße", "Sprays"), isDarkMode)
+                    SectionLabel(viewModel.t("Sprühstöße", "Sprays"))
                     // Showing decimal sprays would be odd, but formatting price/stats below
                     Spacer(Modifier.height(12.dp))
                     Row(
@@ -833,16 +807,16 @@ fun AddLogDialog(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f))
+                                .background(Color.Black.copy(alpha = 0.05f))
                         ) {
-                            Icon(Icons.Default.Remove, contentDescription = null, tint = if (isDarkMode) Color.White else AppleTextBlack)
+                            Icon(Icons.Default.Remove, contentDescription = null, tint = AppleTextBlack)
                         }
 
                         Text(
                             "$sprays",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = if (isDarkMode) Color.White else AppleTextBlack,
+                            color = AppleTextBlack,
                             modifier = Modifier.padding(horizontal = 24.dp)
                         )
 
@@ -851,9 +825,9 @@ fun AddLogDialog(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background((if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f))
+                                .background(Color.Black.copy(alpha = 0.05f))
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = null, tint = if (isDarkMode) Color.White else AppleTextBlack)
+                            Icon(Icons.Default.Add, contentDescription = null, tint = AppleTextBlack)
                         }
                     }
                     
@@ -865,14 +839,14 @@ fun AddLogDialog(
                         valueRange = 1f..maxSpraysFromVolume.toFloat(),
                         steps = if (maxSpraysFromVolume > 1) maxSpraysFromVolume - 1 else 0,
                         colors = SliderDefaults.colors(
-                            thumbColor = if (isDarkMode) Color.White else AppleTextBlack,
-                            activeTrackColor = if (isDarkMode) Color.White else AppleTextBlack,
-                            inactiveTrackColor = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f)
+                            thumbColor = AppleTextBlack,
+                            activeTrackColor = AppleTextBlack,
+                            inactiveTrackColor = Color.Black.copy(alpha = 0.05f)
                         )
                     )
                 }
 
-                SectionLabel(viewModel.t("Wetter", "Weather"), isDarkMode)
+                SectionLabel(viewModel.t("Wetter", "Weather"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(weathers) { w ->
                         SelectableChip(
@@ -884,19 +858,17 @@ fun AddLogDialog(
                                 "🌡 Heiß" -> viewModel.t("🌡 Heiß", "🌡 Hot")
                                 else -> w
                             }, 
-                            selected = weather == w, 
-                            isDarkMode = isDarkMode
+                            selected = weather == w
                         ) { weather = w }
                     }
                 }
 
-                SectionLabel(viewModel.t("Anlass", "Occasion"), isDarkMode)
+                SectionLabel(viewModel.t("Anlass", "Occasion"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(occasions) { o ->
                         SelectableChip(
                             label = viewModel.translateOccasion(o), 
-                            selected = occasion == o, 
-                            isDarkMode = isDarkMode
+                            selected = occasion == o
                         ) { occasion = o }
                     }
                 }
@@ -906,8 +878,7 @@ fun AddLogDialog(
                     onValueChange = { note = it },
                     label = viewModel.t("Notiz zum heutigen Tag", "Note for the day"),
                     singleLine = false,
-                    modifier = Modifier.height(80.dp),
-                    isDarkMode = isDarkMode
+                    modifier = Modifier.height(80.dp)
                 )
             }
         },
@@ -916,13 +887,13 @@ fun AddLogDialog(
                 text = viewModel.t("Eintragen", "Log"),
                 onClick = { onSave(occasion, weather, note, sprays) },
                 modifier = Modifier.padding(bottom = 12.dp),
-                containerColor = if (isDarkMode) Color.White else AppleTextBlack,
-                contentColor = if (isDarkMode) Color.Black else Color.White
+                containerColor = AppleTextBlack,
+                contentColor = Color.White
             )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(viewModel.t("Abbrechen", "Cancel"), color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, fontWeight = FontWeight.SemiBold)
+                Text(viewModel.t("Abbrechen", "Cancel"), color = AppleTextSecondary, fontWeight = FontWeight.SemiBold)
             }
         }
     )
@@ -934,7 +905,6 @@ fun BulkAddDialog(
     viewModel: com.example.perfumevault.viewmodel.PerfumeViewModel,
     onDismiss: () -> Unit
 ) {
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
     var text by remember { mutableStateOf("") }
     val context = LocalContext.current
 
@@ -955,14 +925,14 @@ fun BulkAddDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White,
+        containerColor = Color.White,
         shape = RoundedCornerShape(32.dp),
         title = { 
             Text(
                 viewModel.t("Bulk Import", "Bulk Import"), 
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
-                color = if (isDarkMode) Color.White else AppleTextBlack
+                color = AppleTextBlack
             ) 
         },
         text = {
@@ -973,7 +943,7 @@ fun BulkAddDialog(
                         "Paste JSON or text (Brand; Name; Size; Fill; Price)."
                     ),
                     fontSize = 12.sp,
-                    color = (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.5f),
+                    color = Color.Black.copy(alpha = 0.5f),
                     lineHeight = 16.sp
                 )
                 
@@ -984,12 +954,12 @@ fun BulkAddDialog(
                     placeholder = { Text(viewModel.t("Hier einfügen...", "Paste here..."), color = Color.Gray.copy(alpha = 0.5f)) },
                     shape = RoundedCornerShape(24.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = if (isDarkMode) Color.White else Color.Black,
-                        unfocusedTextColor = if (isDarkMode) Color.White else Color.Black,
-                        focusedContainerColor = (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.03f),
-                        unfocusedContainerColor = (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.03f),
-                        focusedBorderColor = AppleAccentBlue.copy(alpha = 0.5f),
-                        unfocusedBorderColor = (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.1f)
+                        focusedTextColor = AppleTextBlack,
+                        unfocusedTextColor = AppleTextBlack,
+                        focusedContainerColor = Color.Black.copy(alpha = 0.03f),
+                        unfocusedContainerColor = Color.Black.copy(alpha = 0.03f),
+                        focusedBorderColor = AppleAccentBlue,
+                        unfocusedBorderColor = Color.Black.copy(alpha = 0.1f)
                     )
                 )
 
@@ -1014,8 +984,8 @@ fun BulkAddDialog(
                     viewModel.addPerfumesFromText(text)
                     onDismiss()
                 },
-                containerColor = if (isDarkMode) Color.White else AppleTextBlack,
-                contentColor = if (isDarkMode) Color.Black else Color.White
+                containerColor = AppleTextBlack,
+                contentColor = Color.White
             )
         },
         dismissButton = {
@@ -1033,8 +1003,6 @@ fun EditLogDialog(
     onDismiss: () -> Unit,
     onSave: (com.example.perfumevault.data.UsageLog) -> Unit
 ) {
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
-    
     val weathers = listOf("☀️ Sonnig", "🌤 Bewölkt", "🌧 Regen", "❄️ Kalt", "🌡 Heiß")
     val occasions = listOf("Alltag", "Business", "Abend", "Date", "Sport", "Reise")
 
@@ -1045,20 +1013,20 @@ fun EditLogDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White,
+        containerColor = Color.White,
         shape = RoundedCornerShape(32.dp),
         title = { 
             Text(
                 viewModel.t("Eintrag bearbeiten", "Edit Entry"), 
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
-                color = if (isDarkMode) Color.White else AppleTextBlack
+                color = AppleTextBlack
             ) 
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column {
-                    SectionLabel(viewModel.t("Sprüher", "Sprays"), isDarkMode)
+                    SectionLabel(viewModel.t("Sprüher", "Sprays"))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -1066,24 +1034,24 @@ fun EditLogDialog(
                     ) {
                         IconButton(
                             onClick = { if (sprays > 1) sprays-- },
-                            modifier = Modifier.background((if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.05f), RoundedCornerShape(12.dp))
-                        ) { Icon(Icons.Default.Remove, null, tint = if (isDarkMode) Color.White else Color.Black) }
+                            modifier = Modifier.background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+                        ) { Icon(Icons.Default.Remove, null, tint = AppleTextBlack) }
                         
                         Text(
                             "$sprays", 
                             fontSize = 28.sp, 
                             fontWeight = FontWeight.ExtraBold,
-                            color = if (isDarkMode) Color.White else AppleTextBlack
+                            color = AppleTextBlack
                         )
                         
                         IconButton(
                             onClick = { sprays++ },
-                            modifier = Modifier.background((if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.05f), RoundedCornerShape(12.dp))
-                        ) { Icon(Icons.Default.Add, null, tint = if (isDarkMode) Color.White else Color.Black) }
+                            modifier = Modifier.background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+                        ) { Icon(Icons.Default.Add, null, tint = AppleTextBlack) }
                     }
                 }
 
-                SectionLabel(viewModel.t("Wetter", "Weather"), isDarkMode)
+                SectionLabel(viewModel.t("Wetter", "Weather"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(weathers) { w ->
                         SelectableChip(
@@ -1095,20 +1063,19 @@ fun EditLogDialog(
                                 "🌡 Heiß" -> viewModel.t("🌡 Heiß", "🌡 Hot")
                                 else -> w
                             }, 
-                            selected = weather == w, 
-                            isDarkMode = isDarkMode
+                            selected = weather == w
                         ) { weather = w }
                     }
                 }
 
-                SectionLabel(viewModel.t("Anlass", "Occasion"), isDarkMode)
+                SectionLabel(viewModel.t("Anlass", "Occasion"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(occasions) { o ->
-                        SelectableChip(viewModel.translateOccasion(o), selected = occasion == o, isDarkMode = isDarkMode) { occasion = o }
+                        SelectableChip(viewModel.translateOccasion(o), selected = occasion == o) { occasion = o }
                     }
                 }
 
-                GlassTextField(value = note, onValueChange = { note = it }, label = viewModel.t("Notiz", "Note"), isDarkMode = isDarkMode)
+                GlassTextField(value = note, onValueChange = { note = it }, label = viewModel.t("Notiz", "Note"))
             }
         },
         confirmButton = {
@@ -1117,8 +1084,8 @@ fun EditLogDialog(
                 onClick = {
                     onSave(log.copy(weather = weather, occasion = occasion, note = note, sprays = sprays))
                 },
-                containerColor = if (isDarkMode) Color.White else AppleTextBlack,
-                contentColor = if (isDarkMode) Color.Black else Color.White
+                containerColor = AppleTextBlack,
+                contentColor = Color.White
             )
         },
         dismissButton = {
@@ -1128,23 +1095,24 @@ fun EditLogDialog(
 }
 
 @Composable
-private fun SectionLabel(text: String, isDarkMode: Boolean = false) {
+private fun SectionLabel(text: String) {
     Text(
-        text,
-        color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary,
+        text.uppercase(),
+        color = AppleTextBlack.copy(alpha = 0.9f),
         fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 0.5.sp
+        fontWeight = FontWeight.Black,
+        letterSpacing = 2.sp,
+        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
     )
 }
 
 @Composable
-fun ErrorBanner(message: String, isDarkMode: Boolean) {
+fun ErrorBanner(message: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.Red.copy(alpha = if (isDarkMode) 0.2f else 0.1f))
+            .background(Color.Red.copy(alpha = 0.1f))
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -1157,7 +1125,7 @@ fun ErrorBanner(message: String, isDarkMode: Boolean) {
         )
         Text(
             message, 
-            color = if (isDarkMode) Color(0xFFFF453A) else Color.Red,
+            color = Color.Red,
             fontSize = 13.sp, 
             fontWeight = FontWeight.Bold, 
             modifier = Modifier.weight(1f)

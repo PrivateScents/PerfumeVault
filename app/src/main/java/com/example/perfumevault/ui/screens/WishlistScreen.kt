@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -46,68 +48,79 @@ fun WishlistScreen(
 ) {
     val perfumes by viewModel.wishlistPerfumes.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = viewModel::setSearchQuery,
+        // ── Suchleiste
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            placeholder = { 
-                Text(
-                    viewModel.t("Wunschliste durchsuchen…", "Search wishlist..."), 
-                    fontSize = 14.sp, 
-                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary
-                ) 
-            },
-            leadingIcon = { 
-                Icon(
-                    Icons.Default.Search, 
-                    contentDescription = null, 
-                    tint = if (isDarkMode) Color.White else AppleTextBlack
-                ) 
-            },
-            trailingIcon = {
-                AnimatedVisibility(searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { viewModel.setSearchQuery("") }) {
-                        Icon(
-                            Icons.Default.Clear, 
-                            contentDescription = viewModel.t("Löschen", "Clear"),
-                            tint = if (isDarkMode) Color.White else AppleTextBlack
-                        )
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            GlassSurface(
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                cornerRadius = 28.dp,
+                alpha = 0.4f
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Search, 
+                        null, 
+                        tint = Color.Black.copy(alpha = 0.3f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    BasicTextField(
+                        value = searchQuery,
+                        onValueChange = viewModel::setSearchQuery,
+                        modifier = Modifier.weight(1f),
+                        textStyle = androidx.compose.ui.text.TextStyle(
+                            color = AppleTextBlack,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium
+                        ),
+                        cursorBrush = SolidColor(AppleAccentBlue),
+                        singleLine = true,
+                        decorationBox = { innerTextField ->
+                            Box(contentAlignment = Alignment.CenterStart) {
+                                if (searchQuery.isEmpty()) {
+                                    Text(
+                                        viewModel.t("Wünsche durchsuchen...", "Search wishes..."),
+                                        color = Color.Black.copy(alpha = 0.2f),
+                                        fontSize = 15.sp
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
+                    )
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.setSearchQuery("") }) {
+                            Icon(Icons.Default.Close, null, modifier = Modifier.size(18.dp), tint = Color.Black.copy(alpha = 0.3f))
+                        }
                     }
                 }
-            },
-            shape = RoundedCornerShape(20.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = (if (isDarkMode) Color.Black else Color.White).copy(alpha = 0.8f),
-                unfocusedContainerColor = (if (isDarkMode) Color.Black else Color.White).copy(alpha = 0.5f),
-                focusedBorderColor = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.1f),
-                unfocusedBorderColor = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f),
-                focusedTextColor = if (isDarkMode) Color.White else AppleTextBlack,
-                unfocusedTextColor = if (isDarkMode) Color.White else AppleTextBlack
-            ),
-            singleLine = true
-        )
+            }
+        }
 
         if (perfumes.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.AutoAwesome, 
-                        contentDescription = null, 
-                        modifier = Modifier.size(64.dp),
-                        tint = (if (isDarkMode) Color.White else AppleTextSecondary).copy(alpha = 0.2f)
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
+                    Text(
+                        "✦", 
+                        fontSize = 48.sp, 
+                        color = Color.Black.copy(alpha = 0.1f)
                     )
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(Modifier.height(24.dp))
                     Text(
                         viewModel.t("Keine Wünsche gefunden", "No wishes found"), 
-                        color = if (isDarkMode) Color.White else AppleTextBlack, 
+                        color = AppleTextBlack, 
                         fontWeight = FontWeight.Bold, 
-                        fontSize = 18.sp
+                        fontSize = 18.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
             }
@@ -139,7 +152,6 @@ fun WishlistScreen(
                             this.alpha = alpha
                         },
                         perfume = perfume,
-                        isDarkMode = isDarkMode,
                         viewModel = viewModel,
                         onClick = { onPerfumeClick(perfume) },
                         onBuy = { 
@@ -159,7 +171,6 @@ fun WishlistScreen(
 fun WishlistCard(
     modifier: Modifier = Modifier,
     perfume: Perfume,
-    isDarkMode: Boolean,
     viewModel: PerfumeViewModel,
     onClick: () -> Unit,
     onBuy: () -> Unit,
@@ -183,105 +194,98 @@ fun WishlistCard(
         label = "fade"
     )
 
-    PressableGlassCard(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .graphicsLayer {
                 translationX = offsetX
                 alpha = opacity
-            },
-        onClick = onClick,
-        isDarkMode = isDarkMode
-    ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(90.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.03f))
-                    .border(
-                        0.5.dp, 
-                        (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.08f),
-                        RoundedCornerShape(20.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (perfume.imageUrl.isNotEmpty()) {
-                    AsyncImage(
-                        model = perfume.imageUrl,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp),
-                        contentScale = androidx.compose.ui.layout.ContentScale.Fit
-                    )
-                } else {
-                    Icon(
-                        Icons.Default.ShoppingBag,
-                        contentDescription = null,
-                        tint = (if (isDarkMode) Color.White else AppleTextSecondary).copy(alpha = 0.2f),
-                        modifier = Modifier.size(36.dp)
-                    )
-                }
             }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    perfume.brand.uppercase(),
-                    fontSize = 10.sp,
-                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
-                )
-                Text(
-                    perfume.name,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isDarkMode) Color.White else AppleTextBlack,
-                    lineHeight = 26.sp,
-                    letterSpacing = (-0.5).sp
-                )
-                
-                Spacer(Modifier.height(12.dp))
-                
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        GlassCard(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onClick
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                // Image Frame
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Color.Black.copy(alpha = 0.02f))
                 ) {
-                    Button(
-                        onClick = {
-                            isMoving = true
-                            scope.launch {
-                                delay(600)
-                                onBuy()
-                            }
-                        },
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        modifier = Modifier.height(38.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isDarkMode) Color.White else Color.Black,
-                            contentColor = if (isDarkMode) Color.Black else Color.White
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(viewModel.t("Gerade gekauft", "Just Bought"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    }
-                    
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.DeleteOutline, 
-                            contentDescription = null, 
-                            tint = Color.Red.copy(alpha = 0.6f),
-                            modifier = Modifier.size(22.dp)
+                    if (perfume.imageUrl.isNotEmpty()) {
+                        AsyncImage(
+                            model = perfume.imageUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize().padding(12.dp),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Fit
                         )
+                    } else {
+                        Icon(
+                            Icons.Default.ShoppingBag, 
+                            null, 
+                            modifier = Modifier.size(32.dp).align(Alignment.Center), 
+                            tint = Color.Black.copy(alpha = 0.1f)
+                        )
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        perfume.brand.uppercase(),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 2.sp,
+                        color = AppleTextBlack.copy(alpha = 0.4f)
+                    )
+                    Text(
+                        perfume.name,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppleTextBlack
+                    )
+                    
+                    Spacer(Modifier.height(16.dp))
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                isMoving = true
+                                scope.launch {
+                                    delay(600)
+                                    onBuy()
+                                }
+                            },
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            modifier = Modifier.height(38.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Black,
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(viewModel.t("Gerade gekauft", "Just Bought"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                        
+                        IconButton(
+                            onClick = onDelete,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.DeleteOutline, 
+                                null, 
+                                tint = Color.Red.copy(alpha = 0.6f),
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                     }
                 }
             }

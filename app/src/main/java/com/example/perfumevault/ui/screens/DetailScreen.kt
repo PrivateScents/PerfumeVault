@@ -38,11 +38,10 @@ fun DetailScreen(
 ) {
     val perfume by viewModel.getPerfumeById(perfumeId).collectAsState(initial = null)
     val logs by viewModel.getLogsForPerfume(perfumeId).collectAsState(initial = emptyList())
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
 
     if (perfume == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = if (isDarkMode) Color.White else AppleTextBlack)
+            CircularProgressIndicator(color = AppleTextBlack)
         }
         return
     }
@@ -57,45 +56,22 @@ fun DetailScreen(
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { 
-                    Text(
-                        currentPerfume.brand.uppercase(), 
-                        color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, 
-                        fontSize = 12.sp, 
-                        fontWeight = FontWeight.Bold, 
-                        letterSpacing = 1.sp
-                    ) 
-                },
+                title = {},
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = null, 
-                            tint = if (isDarkMode) Color.White else AppleTextBlack
+                            null, 
+                            tint = AppleTextBlack
                         )
                     }
                 },
                 actions = {
                     IconButton(onClick = { showEditDialog = true }) {
-                        Icon(
-                            Icons.Default.Edit, 
-                            contentDescription = null, 
-                            tint = if (isDarkMode) Color.White else AppleTextBlack
-                        )
-                    }
-                    IconButton(onClick = { viewModel.toggleFavorite(currentPerfume) }) {
-                        Icon(
-                            imageVector = if (currentPerfume.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
-                            contentDescription = null,
-                            tint = if (currentPerfume.isFavorite) Color(0xFFFFCC00) else (if (isDarkMode) Color.White.copy(alpha = 0.3f) else AppleTextSecondary.copy(alpha = 0.3f))
-                        )
+                        Icon(Icons.Default.Edit, null, tint = AppleTextBlack)
                     }
                     IconButton(onClick = { showDeleteConfirm = true }) {
-                        Icon(
-                            Icons.Default.Delete, 
-                            contentDescription = null, 
-                            tint = if (isDarkMode) Color.White.copy(alpha = 0.4f) else AppleTextSecondary.copy(alpha = 0.5f)
-                        )
+                        Icon(Icons.Default.Delete, null, tint = AppleTextSecondary.copy(alpha = 0.5f))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -107,8 +83,8 @@ fun DetailScreen(
                     text = viewModel.t("Heute getragen", "Worn Today"),
                     onClick = { showLogDialog = true },
                     modifier = Modifier.padding(bottom = 32.dp),
-                    containerColor = if (isDarkMode) Color.White else AppleTextBlack,
-                    contentColor = if (isDarkMode) Color.Black else Color.White
+                    containerColor = AppleTextBlack,
+                    contentColor = Color.White
                 )
             }
         },
@@ -118,224 +94,223 @@ fun DetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = PaddingValues(bottom = 120.dp),
+            verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            // Bild
-            if (currentPerfume.imageUrl.isNotEmpty()) {
-                item {
+            // Image Header
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(320.dp)
-                            .clip(RoundedCornerShape(32.dp))
-                            .background(if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.03f))
-                            .border(
-                                0.5.dp, 
-                                (if (isDarkMode) Color.White else Color.Black).copy(alpha = 0.08f),
-                                RoundedCornerShape(32.dp)
-                            ),
-                        contentAlignment = Alignment.Center
+                            .height(400.dp)
+                            .clip(RoundedCornerShape(40.dp))
+                            .background(Color.Black.copy(alpha = 0.02f))
                     ) {
-                        AsyncImage(
-                            model = currentPerfume.imageUrl,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(32.dp),
-                            contentScale = androidx.compose.ui.layout.ContentScale.Fit
-                        )
-                    }
-                }
-            }
-
-            // Name + Rating
-            item {
-                GlassSurface(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
-                    Column(modifier = Modifier.padding(24.dp)) {
-                        Text(
-                            currentPerfume.name, 
-                            fontSize = 30.sp, 
-                            fontWeight = FontWeight.Bold, 
-                            color = if (isDarkMode) Color.White else AppleTextBlack, 
-                            lineHeight = 36.sp,
-                            letterSpacing = (-0.5).sp
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        AnimatedRatingBar(rating = currentPerfume.rating, isDarkMode = isDarkMode)
-                        Spacer(Modifier.height(24.dp))
+                        if (currentPerfume.imageUrl.isNotEmpty()) {
+                            AsyncImage(
+                                model = currentPerfume.imageUrl,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize().padding(48.dp),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                            )
+                        } else {
+                            Icon(
+                                Icons.Default.Image, 
+                                null, 
+                                modifier = Modifier.size(64.dp).align(Alignment.Center), 
+                                tint = Color.Black.copy(alpha = 0.05f)
+                            )
+                        }
                         
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            currentPerfume.type.split(" / ").filter { it.isNotBlank() }.forEach { 
-                                MiniChip(viewModel.translateFamily(it), isDarkMode) 
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Füllstand
-            item {
-                GlassSurface(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
-                    Column(modifier = Modifier.padding(24.dp)) {
-                        val percentage = (remainingMl / currentPerfume.bottleSize.toDouble() * 100).toInt().coerceIn(0, 100)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    viewModel.t("Füllstand", "Fill Level"), 
-                                    color = if (isDarkMode) Color.White else AppleTextBlack, 
-                                    fontSize = 16.sp, 
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    viewModel.t("$percentage% verbleibend", "$percentage% remaining"), 
-                                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, 
-                                    fontSize = 12.sp
-                                )
-                            }
-                            Text(
-                                "${"%.2f".format(remainingMl)} / ${currentPerfume.bottleSize} ml", 
-                                color = if (isDarkMode) Color.White else AppleTextBlack, 
-                                fontWeight = FontWeight.Bold, 
-                                fontSize = 18.sp
+                        if (currentPerfume.isFavorite) {
+                            Icon(
+                                Icons.Filled.Star, 
+                                null, 
+                                tint = GoldAccent, 
+                                modifier = Modifier.align(Alignment.TopEnd).padding(24.dp).size(32.dp)
                             )
                         }
-                        Spacer(Modifier.height(16.dp))
-                        val progressColor = when {
-                            percentage >= 20 -> Color(0xFF4CAF50) // Green
-                            percentage >= 10 -> Color(0xFFFF9800) // Orange
-                            else -> Color(0xFFF44336) // Red
-                        }
-                        val animatedProgress by animateFloatAsState(
-                            targetValue = (remainingMl / currentPerfume.bottleSize.toDouble()).toFloat(),
-                            animationSpec = tween(1000, easing = FastOutSlowInEasing),
-                            label = "progress"
-                        )
-                        LinearProgressIndicator(
-                            progress = { animatedProgress },
-                            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                            color = progressColor,
-                            trackColor = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.05f),
-                        )
                     }
-                }
-            }
 
-            // Details
-            item {
-                GlassSurface(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
-                    Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Spacer(Modifier.height(32.dp))
+                    
+                    Text(
+                        currentPerfume.brand.uppercase(),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 4.sp,
+                        color = AppleTextBlack.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        currentPerfume.name,
+                        fontSize = 42.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppleTextBlack,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        lineHeight = 48.sp,
+                        letterSpacing = (-1.5).sp
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    // Clean dark rating
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Star, null, modifier = Modifier.size(16.dp), tint = AppleTextBlack)
+                        Spacer(Modifier.width(6.dp))
                         Text(
-                            viewModel.t("DETAILS", "DETAILS"), 
-                            color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, 
-                            fontSize = 11.sp, 
-                            fontWeight = FontWeight.Bold, 
-                            letterSpacing = 1.sp
+                            "%.1f".format(currentPerfume.rating),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Black,
+                            color = AppleTextBlack
                         )
-                        DetailRow(viewModel.t("Saison", "Season"), viewModel.translateSeason(currentPerfume.season), isDarkMode)
-                        DetailRow(viewModel.t("Anlass", "Occasion"), viewModel.translateOccasion(currentPerfume.occasion), isDarkMode)
-                        if (currentPerfume.price > 0) DetailRow(viewModel.t("Preis", "Price"), "€${"%.2f".format(currentPerfume.price)}", isDarkMode)
-                        if (currentPerfume.purchaseDate.isNotEmpty()) DetailRow(viewModel.t("Gekauft", "Purchased"), currentPerfume.purchaseDate, isDarkMode)
-                        if (currentPerfume.notes.isNotEmpty()) DetailRow(viewModel.t("Notizen", "Notes"), currentPerfume.notes, isDarkMode)
                     }
                 }
             }
 
-            // Tragehäufigkeit
-            if (!currentPerfume.isWishlist) {
-                item {
-                    GlassSurface(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
-                        Row(
-                            modifier = Modifier.padding(24.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                viewModel.t("Tragehäufigkeit", "Usage Frequency"), 
-                                color = if (isDarkMode) Color.White else AppleTextBlack, 
-                                fontWeight = FontWeight.Bold, 
-                                fontSize = 16.sp
-                            )
-                            Spacer(Modifier.weight(1f))
-                            Text(
-                                "${logs.size}×", 
-                                color = if (isDarkMode) Color.White else AppleTextBlack, 
-                                fontWeight = FontWeight.Bold, 
-                                fontSize = 28.sp
-                            )
+            // Stats Row & Progress Bar
+            item {
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        InfoTile(
+                            modifier = Modifier.weight(1f),
+                            label = viewModel.t("Füllstand", "Volume"),
+                            value = "${percentage(remainingMl, currentPerfume.bottleSize)}%"
+                        )
+                        InfoTile(
+                            modifier = Modifier.weight(1f),
+                            label = viewModel.t("Wert", "Value"),
+                            value = "€${"%.0f".format(currentPerfume.price)}"
+                        )
+                    }
+                    
+                    Spacer(Modifier.height(24.dp))
+                    
+                    // Label for Progress Bar
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Text(
+                            viewModel.t("DETAILS ZUM FÜLLSTAND", "VOLUME DETAILS"),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 1.sp,
+                            color = AppleTextBlack.copy(alpha = 0.4f)
+                        )
+                        Text(
+                            "${"%.1f".format(remainingMl)} / ${currentPerfume.bottleSize} ml",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AppleTextBlack
+                        )
+                    }
+
+                    // Colored Progress Bar
+                    val percent = percentage(remainingMl, currentPerfume.bottleSize)
+                    val progressColor = when {
+                        percent >= 20 -> Color(0xFF4CAF50) // Green
+                        percent >= 10 -> Color(0xFFFF9800) // Orange
+                        else -> Color(0xFFF44336) // Red
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color.Black.copy(alpha = 0.05f))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(percent / 100f)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(progressColor)
+                        )
+                    }
+                }
+            }
+
+            // Details Section
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SectionLabel(viewModel.t("CHARAKTERISTIK", "CHARACTERISTICS"))
+                    GlassCard {
+                        DetailRow(viewModel.t("Saison", "Season"), viewModel.translateSeason(currentPerfume.season))
+                        Spacer(Modifier.height(16.dp))
+                        DetailRow(viewModel.t("Anlass", "Occasion"), viewModel.translateOccasion(currentPerfume.occasion))
+                        if (currentPerfume.type.isNotEmpty()) {
+                            Spacer(Modifier.height(16.dp))
+                            DetailRow(viewModel.t("Familie", "Family"), currentPerfume.type)
                         }
                     }
                 }
             }
 
-            // Verlauf
+            // Notes Section
+            if (currentPerfume.notes.isNotEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        SectionLabel(viewModel.t("NOTIZEN", "NOTES"))
+                        Text(
+                            currentPerfume.notes,
+                            fontSize = 16.sp,
+                            color = AppleTextBlack.copy(alpha = 0.7f),
+                            lineHeight = 24.sp
+                        )
+                    }
+                }
+            }
+
+            // Timeline
             if (logs.isNotEmpty()) {
                 item {
-                    Text(
-                        viewModel.t("VERLAUF", "HISTORY"),
-                        color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        modifier = Modifier.padding(start = 8.dp, top = 8.dp)
-                    )
-                }
-                items(logs) { log ->
-                    GlassSurface(
-                        modifier = Modifier.fillMaxWidth(),
-                        alpha = 0.3f,
-                        isDarkMode = isDarkMode
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    log.date, 
-                                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, 
-                                    fontSize = 12.sp, 
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    "${log.sprays} ${viewModel.t("Sprüher", "Sprays")}", 
-                                    color = if (isDarkMode) Color.White else AppleTextBlack, 
-                                    fontSize = 12.sp, 
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            if (log.weather.isNotEmpty()) {
-                                Spacer(Modifier.height(10.dp))
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    LogChip(log.weather, isDarkMode)
-                                    if (log.occasion.isNotEmpty()) LogChip(viewModel.translateOccasion(log.occasion), isDarkMode)
-                                }
-                            }
-                            if (log.note.isNotEmpty()) {
-                                Spacer(Modifier.height(10.dp))
-                                Text(
-                                    log.note, 
-                                    color = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.8f), 
-                                    fontSize = 14.sp
-                                )
-                            }
+                        SectionLabel(viewModel.t("TIMELINE", "TIMELINE"))
+                        logs.take(10).forEach { log ->
+                            TimelineItem(log)
+                            Spacer(Modifier.height(12.dp))
                         }
                     }
                 }
             }
-
-            item { Spacer(Modifier.height(100.dp)) }
         }
     }
 
-    // Log-Dialog
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(28.dp),
+            title = { Text(viewModel.t("Löschen?", "Delete?"), fontWeight = FontWeight.Bold) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.deletePerfume(currentPerfume); onDelete() }) {
+                    Text(viewModel.t("Löschen", "Delete"), color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text(viewModel.t("Abbrechen", "Cancel"))
+                }
+            }
+        )
+    }
+    
     if (showLogDialog) {
         AddLogDialog(
             perfumeName = currentPerfume.name,
@@ -349,7 +324,6 @@ fun DetailScreen(
         )
     }
 
-    // Edit-Dialog
     if (showEditDialog) {
         com.example.perfumevault.ui.dialogs.EditPerfumeDialog(
             perfume = currentPerfume,
@@ -358,66 +332,65 @@ fun DetailScreen(
             onSave = { updated ->
                 val wasWishlist = currentPerfume.isWishlist
                 val isWishlist = updated.isWishlist
-                
                 viewModel.updatePerfume(updated)
                 showEditDialog = false
-                
-                // Wenn von Sammlung -> Merkliste: Navigiere
-                if (!wasWishlist && isWishlist) {
-                    onBack() // Detail schließen
-                    viewModel.setTab(1) // Zur Merkliste wechseln
-                }
-            }
-        )
-    }
-
-    // Löschen
-    if (showDeleteConfirm) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirm = false },
-            containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White,
-            shape = RoundedCornerShape(24.dp),
-            title = { 
-                Text(
-                    viewModel.t("Duft löschen?", "Delete fragrance?"), 
-                    color = if (isDarkMode) Color.White else AppleTextBlack, 
-                    fontWeight = FontWeight.Bold
-                ) 
-            },
-            text = { 
-                Text(
-                    viewModel.t("${currentPerfume.brand} – ${currentPerfume.name} wird dauerhaft entfernt.", "${currentPerfume.brand} – ${currentPerfume.name} will be permanently removed."), 
-                    color = if (isDarkMode) Color.White.copy(alpha = 0.7f) else AppleTextSecondary
-                ) 
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deletePerfume(currentPerfume)
-                        onDelete()
-                        showDeleteConfirm = false
-                    }
-                ) { Text(viewModel.t("Löschen", "Delete"), color = Color.Red, fontWeight = FontWeight.Bold) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text(
-                        viewModel.t("Abbrechen", "Cancel"), 
-                        color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary
-                    )
-                }
+                if (!wasWishlist && isWishlist) { onBack(); viewModel.setTab(1) }
             }
         )
     }
 }
 
+private fun percentage(current: Double, total: Int): Int = (current / total.toDouble() * 100).toInt().coerceIn(0, 100)
+
 @Composable
-fun DetailRow(label: String, value: String, isDarkMode: Boolean = false) {
+fun InfoTile(modifier: Modifier, label: String, value: String) {
+    GlassSurface(
+        modifier = modifier.height(80.dp),
+        cornerRadius = 20.dp
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(label.uppercase(), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.Black.copy(alpha = 0.4f), letterSpacing = 1.sp)
+            Text(value, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+        }
+    }
+}
+
+@Composable
+fun TimelineItem(log: com.example.perfumevault.data.UsageLog) {
+    GlassCard {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(log.date, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
+            Text("${log.sprays} sprays", fontSize = 14.sp, color = Color.Black.copy(alpha = 0.5f))
+        }
+        if (log.note.isNotEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            Text(log.note, fontSize = 13.sp, color = Color.Black.copy(alpha = 0.7f))
+        }
+    }
+}
+
+@Composable
+fun DetailRow(label: String, value: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else AppleTextSecondary, fontSize = 13.sp)
-        Text(value, color = if (isDarkMode) Color.White else AppleTextBlack, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(label, color = AppleTextSecondary, fontSize = 13.sp)
+        Text(value, color = AppleTextBlack, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
     }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text,
+        fontSize = 10.sp,
+        fontWeight = FontWeight.ExtraBold,
+        letterSpacing = 2.sp,
+        color = AppleTextBlack.copy(alpha = 0.9f),
+        modifier = Modifier.padding(start = 4.dp)
+    )
 }
