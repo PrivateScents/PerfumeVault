@@ -1,6 +1,5 @@
 package com.example.perfumevault.ui.screens
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,6 +25,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.perfumevault.data.Perfume
 import com.example.perfumevault.ui.components.*
+import com.example.perfumevault.ui.theme.LocalAdaptiveColors
+import com.example.perfumevault.ui.theme.AppleAccentBlue
+import com.example.perfumevault.ui.theme.GoldAccent
 import com.example.perfumevault.viewmodel.PerfumeViewModel
 import com.example.perfumevault.viewmodel.SortMode
 
@@ -39,6 +41,7 @@ fun ShelfScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val sortMode by viewModel.sortMode.collectAsState()
     val filterFavorites by viewModel.filterFavorites.collectAsState()
+    val adaptive = LocalAdaptiveColors.current
     viewModel.currentLanguage.collectAsState() 
 
     var showSortMenu by remember { mutableStateOf(false) }
@@ -63,7 +66,7 @@ fun ShelfScreen(
                     Icon(
                         Icons.Default.Search, 
                         null, 
-                        tint = Color.Black.copy(alpha = 0.3f),
+                        tint = adaptive.textPrimary.copy(alpha = 0.3f),
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(12.dp))
@@ -72,7 +75,7 @@ fun ShelfScreen(
                         onValueChange = viewModel::setSearchQuery,
                         modifier = Modifier.weight(1f),
                         textStyle = androidx.compose.ui.text.TextStyle(
-                            color = AppleTextBlack,
+                            color = adaptive.textPrimary,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Medium
                         ),
@@ -83,7 +86,7 @@ fun ShelfScreen(
                                 if (searchQuery.isEmpty()) {
                                     Text(
                                         viewModel.t("Suchen...", "Search..."),
-                                        color = Color.Black.copy(alpha = 0.2f),
+                                        color = adaptive.textPrimary.copy(alpha = 0.2f),
                                         fontSize = 15.sp
                                     )
                                 }
@@ -93,7 +96,7 @@ fun ShelfScreen(
                     )
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { viewModel.setSearchQuery("") }) {
-                            Icon(Icons.Default.Close, null, modifier = Modifier.size(18.dp), tint = Color.Black.copy(alpha = 0.3f))
+                            Icon(Icons.Default.Close, null, modifier = Modifier.size(18.dp), tint = adaptive.textPrimary.copy(alpha = 0.3f))
                         }
                     }
                 }
@@ -131,7 +134,7 @@ fun ShelfScreen(
                 DropdownMenu(
                     expanded = showSortMenu,
                     onDismissRequest = { showSortMenu = false },
-                    modifier = Modifier.background(Color.White)
+                    modifier = Modifier.background(adaptive.glassBase)
                 ) {
                     SortMode.entries.forEach { mode ->
                         val itemLabel = when(mode) {
@@ -144,7 +147,7 @@ fun ShelfScreen(
                             text = { 
                                 Text(
                                     itemLabel, 
-                                    color = AppleTextBlack, 
+                                    color = adaptive.textPrimary, 
                                     fontWeight = FontWeight.SemiBold
                                 ) 
                             },
@@ -214,6 +217,7 @@ fun PerfumeCard(
     onClick: () -> Unit,
     onFavoriteToggle: () -> Unit
 ) {
+    val adaptive = LocalAdaptiveColors.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -236,21 +240,21 @@ fun PerfumeCard(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color.Black.copy(alpha = 0.02f))
+                        .background(adaptive.textPrimary.copy(alpha = 0.02f))
                 ) {
                     if (perfume.imageUrl.isNotEmpty()) {
                         AsyncImage(
                             model = perfume.imageUrl,
                             contentDescription = null,
-                            modifier = Modifier.fillMaxSize().padding(12.dp),
-                            contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
                         )
                     } else {
                         Icon(
                             Icons.Default.Image, 
                             null, 
                             modifier = Modifier.size(32.dp).align(Alignment.Center), 
-                            tint = Color.Black.copy(alpha = 0.1f)
+                            tint = adaptive.textPrimary.copy(alpha = 0.1f)
                         )
                     }
                 }
@@ -261,13 +265,13 @@ fun PerfumeCard(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 2.sp,
-                        color = AppleTextBlack.copy(alpha = 0.4f)
+                        color = adaptive.textPrimary.copy(alpha = 0.4f)
                     )
                     Text(
                         perfume.name,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = AppleTextBlack,
+                        color = adaptive.textPrimary,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
@@ -278,14 +282,14 @@ fun PerfumeCard(
                             Icons.Default.Star, 
                             null, 
                             modifier = Modifier.size(14.dp), 
-                            tint = AppleTextBlack
+                            tint = adaptive.textPrimary
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
                             "%.1f".format(perfume.rating),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = AppleTextBlack
+                            color = adaptive.textPrimary
                         )
                     }
                 }
@@ -311,6 +315,7 @@ fun PerfumeCard(
 
 @Composable
 fun FillIndicator(percent: Int) {
+    val adaptive = LocalAdaptiveColors.current
     val progressColor = when {
         percent >= 20 -> Color(0xFF4CAF50) // Green
         percent >= 10 -> Color(0xFFFF9800) // Orange
@@ -329,7 +334,7 @@ fun FillIndicator(percent: Int) {
                 .width(24.dp)
                 .height(40.dp)
                 .clip(RoundedCornerShape(6.dp))
-                .background(Color.Black.copy(alpha = 0.05f))
+                .background(adaptive.textPrimary.copy(alpha = 0.05f))
         ) {
             Box(
                 modifier = Modifier
@@ -350,31 +355,19 @@ fun FillIndicator(percent: Int) {
 }
 
 @Composable
-fun MiniChip(label: String) {
-    Text(
-        text = label,
-        modifier = Modifier
-            .background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        fontSize = 11.sp,
-        color = AppleTextBlack,
-        fontWeight = FontWeight.SemiBold
-    )
-}
-
-@Composable
 fun EmptyState(viewModel: PerfumeViewModel) {
+    val adaptive = LocalAdaptiveColors.current
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
             Text(
                 "✧", 
                 fontSize = 48.sp, 
-                color = Color.Black.copy(alpha = 0.1f)
+                color = adaptive.textPrimary.copy(alpha = 0.1f)
             )
             Spacer(Modifier.height(24.dp))
             Text(
                 viewModel.t("Deine Sammlung ist leer", "Your collection is empty"), 
-                color = AppleTextBlack, 
+                color = adaptive.textPrimary, 
                 fontWeight = FontWeight.Bold, 
                 fontSize = 18.sp,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -382,7 +375,7 @@ fun EmptyState(viewModel: PerfumeViewModel) {
             Spacer(Modifier.height(8.dp))
             Text(
                 viewModel.t("Beginne damit, deine exklusiven Düfte hinzuzufügen.", "Start by adding your exclusive fragrances."), 
-                color = Color.Black.copy(alpha = 0.4f),
+                color = adaptive.textPrimary.copy(alpha = 0.4f),
                 fontSize = 14.sp,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 lineHeight = 20.sp

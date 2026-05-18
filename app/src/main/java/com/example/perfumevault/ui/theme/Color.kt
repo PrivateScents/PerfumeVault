@@ -2,17 +2,23 @@ package com.example.perfumevault.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// iOS 26 Liquid Glass Palette
-val GlassBackground = Color(0xFF0A0A0F)
-val GlassSurface = Color(0x1AFFFFFF)
-val GlassBorder = Color(0x33FFFFFF)
+// --- ULTRA-PLEASANT LIGHT PALETTE (WARM & ORGANIC) ---
+val SoftWhiteBackground = Color(0xFFFBF9F7) // Warm Ivory hint, very easy on eyes
+val SoftSurface = Color(0xFFFFFFFF)
+val AppleTextBlack = Color(0xFF212126) // Slightly softer charcoal
+val AppleTextSecondary = Color(0xFF727278) 
+val AppleAccentBlue = Color(0xFF007AFF)
 
-val DeepPurple = Color(0xFF6200EE)
-val ElectricBlue = Color(0xFF00E5FF)
-val VividPink = Color(0xFFFF007F)
+// --- ACCESSIBLE DARK PALETTE ---
+val DarkBackground = Color(0xFF0F0F12) 
+val DarkSurface = Color(0xFF1C1C1E)
+val DarkText = Color(0xFFF5F5F7) 
+val DarkTextSecondary = Color(0xFF86868B)
 
-val HighVisibilityPrimary = Color(0xFFFFFFFF)
-val HighVisibilitySecondary = Color(0xB3FFFFFF)
+// --- GLASS EFFECTS & ACCENTS ---
+val GlassBorderLight = Color(0x14000000) // Even subtler border
+val GlassBorderDark = Color(0x26FFFFFF) // Subtler dark border
+val LightGlow = Color(0xFFF2EFE9) // Warm glow for background
 
-val GoldAccent = Color(0xFFFFD700)
-val ErrorRed = Color(0xFFFF4B4B)
+val GoldAccent = Color(0xFFD4AF37)
+val ErrorRed = Color(0xFFFF453A)

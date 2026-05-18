@@ -32,6 +32,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.example.perfumevault.ui.components.*
+import com.example.perfumevault.ui.theme.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -102,11 +103,11 @@ fun AddPerfumeDialog(
     var notes by remember { mutableStateOf("") }
     var imageUrl by remember { mutableStateOf("") }
     var isWishlist by remember { mutableStateOf(initialIsWishlist) }
-    var showBulkDialog by remember { mutableStateOf(false) }
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
+    val adaptive = LocalAdaptiveColors.current
     var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -155,12 +156,12 @@ fun AddPerfumeDialog(
         modifier = Modifier
             .fillMaxWidth(0.95f)
             .padding(vertical = 24.dp),
-        containerColor = Color.White,
+        containerColor = adaptive.glassBase,
         shape = RoundedCornerShape(32.dp),
         title = {
             Text(
                 if (initialIsWishlist) viewModel.t("Neuer Wunsch", "New Wish") else viewModel.t("Neuer Duft", "New Fragrance"),
-                color = AppleTextBlack,
+                color = adaptive.textPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
                 letterSpacing = (-0.5).sp
@@ -207,19 +208,19 @@ fun AddPerfumeDialog(
                                 .fillMaxWidth()
                                 .height(150.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(AppleTextBlack.copy(alpha = 0.03f))
+                                .background(adaptive.textPrimary.copy(alpha = 0.03f))
                         ) {
                             AsyncImage(
                                 model = imageUrl,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
+                                contentScale = ContentScale.Crop
                             )
                             IconButton(
                                 onClick = { imageUrl = "" },
                                 modifier = Modifier.align(Alignment.TopEnd)
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = null, tint = AppleTextBlack)
+                                Icon(Icons.Default.Close, contentDescription = null, tint = adaptive.textPrimary)
                             }
                         }
                     }
@@ -237,9 +238,9 @@ fun AddPerfumeDialog(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp), tint = AppleTextBlack)
+                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp), tint = adaptive.textPrimary)
                                 Spacer(Modifier.width(8.dp))
-                                Text(viewModel.t("Galerie", "Gallery"), fontSize = 12.sp, color = AppleTextBlack)
+                                Text(viewModel.t("Galerie", "Gallery"), fontSize = 12.sp, color = adaptive.textPrimary)
                             }
                         }
                         GlassSurface(
@@ -256,9 +257,9 @@ fun AddPerfumeDialog(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = AppleTextBlack)
+                                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = adaptive.textPrimary)
                                 Spacer(Modifier.width(8.dp))
-                                Text(viewModel.t("Kamera", "Camera"), fontSize = 12.sp, color = AppleTextBlack)
+                                Text(viewModel.t("Kamera", "Camera"), fontSize = 12.sp, color = adaptive.textPrimary)
                             }
                         }
                     }
@@ -349,7 +350,7 @@ fun AddPerfumeDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(AppleTextBlack.copy(alpha = 0.05f))
+                            .background(adaptive.textPrimary.copy(alpha = 0.05f))
                             .clickable { isWishlist = !isWishlist }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -357,7 +358,7 @@ fun AddPerfumeDialog(
                     ) {
                         Text(
                             viewModel.t("Auf Merkliste setzen", "Add to Wishlist"),
-                            color = AppleTextBlack,
+                            color = adaptive.textPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
@@ -368,7 +369,7 @@ fun AddPerfumeDialog(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = AppleAccentBlue,
                                 uncheckedThumbColor = Color.Gray,
-                                uncheckedTrackColor = Color.Black.copy(alpha = 0.05f)
+                                uncheckedTrackColor = adaptive.textPrimary.copy(alpha = 0.05f)
                             )
                         )
                     }
@@ -399,20 +400,16 @@ fun AddPerfumeDialog(
                     }
                 },
                 modifier = Modifier.padding(bottom = 12.dp),
-                containerColor = AppleTextBlack,
-                contentColor = Color.White
+                containerColor = adaptive.textPrimary,
+                contentColor = if (adaptive.isDark) Color.Black else Color.White
             )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(viewModel.t("Abbrechen", "Cancel"), color = AppleTextSecondary, fontWeight = FontWeight.SemiBold)
+                Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary, fontWeight = FontWeight.SemiBold)
             }
         }
     )
-
-    if (showBulkDialog) {
-        BulkAddDialog(viewModel = viewModel, onDismiss = { showBulkDialog = false })
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -442,6 +439,7 @@ fun EditPerfumeDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
+    val adaptive = LocalAdaptiveColors.current
     var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -490,12 +488,12 @@ fun EditPerfumeDialog(
         modifier = Modifier
             .fillMaxWidth(0.95f)
             .padding(vertical = 24.dp),
-        containerColor = Color.White,
+        containerColor = adaptive.glassBase,
         shape = RoundedCornerShape(32.dp),
         title = {
             Text(
                 viewModel.t("Bearbeiten", "Edit"),
-                color = AppleTextBlack,
+                color = adaptive.textPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
                 letterSpacing = (-0.5).sp
@@ -542,19 +540,19 @@ fun EditPerfumeDialog(
                                 .fillMaxWidth()
                                 .height(150.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(AppleTextBlack.copy(alpha = 0.03f))
+                                .background(adaptive.textPrimary.copy(alpha = 0.03f))
                         ) {
                             AsyncImage(
                                 model = imageUrl,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
+                                contentScale = ContentScale.Crop
                             )
                             IconButton(
                                 onClick = { imageUrl = "" },
                                 modifier = Modifier.align(Alignment.TopEnd)
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = null, tint = AppleTextBlack)
+                                Icon(Icons.Default.Close, contentDescription = null, tint = adaptive.textPrimary)
                             }
                         }
                     }
@@ -572,9 +570,9 @@ fun EditPerfumeDialog(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp), tint = AppleTextBlack)
+                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp), tint = adaptive.textPrimary)
                                 Spacer(Modifier.width(8.dp))
-                                Text(viewModel.t("Galerie", "Gallery"), fontSize = 12.sp, color = AppleTextBlack)
+                                Text(viewModel.t("Galerie", "Gallery"), fontSize = 12.sp, color = adaptive.textPrimary)
                             }
                         }
                         GlassSurface(
@@ -591,9 +589,9 @@ fun EditPerfumeDialog(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = AppleTextBlack)
+                                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = adaptive.textPrimary)
                                 Spacer(Modifier.width(8.dp))
-                                Text(viewModel.t("Kamera", "Camera"), fontSize = 12.sp, color = AppleTextBlack)
+                                Text(viewModel.t("Kamera", "Camera"), fontSize = 12.sp, color = adaptive.textPrimary)
                             }
                         }
                     }
@@ -683,7 +681,7 @@ fun EditPerfumeDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(AppleTextBlack.copy(alpha = 0.05f))
+                        .background(adaptive.textPrimary.copy(alpha = 0.05f))
                         .clickable { isWishlist = !isWishlist }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -691,7 +689,7 @@ fun EditPerfumeDialog(
                 ) {
                     Text(
                         viewModel.t("Auf Merkliste setzen", "Add to Wishlist"),
-                        color = AppleTextBlack,
+                        color = adaptive.textPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
@@ -702,7 +700,7 @@ fun EditPerfumeDialog(
                             checkedThumbColor = Color.White,
                             checkedTrackColor = AppleAccentBlue,
                             uncheckedThumbColor = Color.Gray,
-                            uncheckedTrackColor = Color.Black.copy(alpha = 0.05f)
+                            uncheckedTrackColor = adaptive.textPrimary.copy(alpha = 0.05f)
                         )
                     )
                 }
@@ -743,13 +741,13 @@ fun EditPerfumeDialog(
                     }
                 },
                 modifier = Modifier.padding(bottom = 12.dp),
-                containerColor = AppleTextBlack,
-                contentColor = Color.White
+                containerColor = adaptive.textPrimary,
+                contentColor = if (adaptive.isDark) Color.Black else Color.White
             )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(viewModel.t("Abbrechen", "Cancel"), color = AppleTextSecondary, fontWeight = FontWeight.SemiBold)
+                Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary, fontWeight = FontWeight.SemiBold)
             }
         }
     )
@@ -767,6 +765,7 @@ fun AddLogDialog(
     
     // 15 Sprüher = 1ml
     val maxSpraysFromVolume = (currentRemainingMl * 15.0).toInt().coerceIn(1, 50)
+    val adaptive = LocalAdaptiveColors.current
     
     val weathers = listOf("☀️ Sonnig", "🌤 Bewölkt", "🌧 Regen", "❄️ Kalt", "🌡 Heiß")
     val occasions = listOf("Alltag", "Business", "Abend", "Date", "Sport", "Reise")
@@ -778,12 +777,12 @@ fun AddLogDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color.White,
+        containerColor = adaptive.glassBase,
         shape = RoundedCornerShape(32.dp),
         title = {
             Text(
                 "${viewModel.t("Duft des Tages", "SotD")}: $perfumeName", 
-                color = AppleTextBlack, 
+                color = adaptive.textPrimary, 
                 fontWeight = FontWeight.Bold, 
                 fontSize = 24.sp,
                 letterSpacing = (-0.5).sp
@@ -807,16 +806,16 @@ fun AddLogDialog(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.Black.copy(alpha = 0.05f))
+                                .background(adaptive.textPrimary.copy(alpha = 0.05f))
                         ) {
-                            Icon(Icons.Default.Remove, contentDescription = null, tint = AppleTextBlack)
+                            Icon(Icons.Default.Remove, contentDescription = null, tint = adaptive.textPrimary)
                         }
 
                         Text(
                             "$sprays",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = AppleTextBlack,
+                            color = adaptive.textPrimary,
                             modifier = Modifier.padding(horizontal = 24.dp)
                         )
 
@@ -825,9 +824,9 @@ fun AddLogDialog(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.Black.copy(alpha = 0.05f))
+                                .background(adaptive.textPrimary.copy(alpha = 0.05f))
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = null, tint = AppleTextBlack)
+                            Icon(Icons.Default.Add, contentDescription = null, tint = adaptive.textPrimary)
                         }
                     }
                     
@@ -839,9 +838,9 @@ fun AddLogDialog(
                         valueRange = 1f..maxSpraysFromVolume.toFloat(),
                         steps = if (maxSpraysFromVolume > 1) maxSpraysFromVolume - 1 else 0,
                         colors = SliderDefaults.colors(
-                            thumbColor = AppleTextBlack,
-                            activeTrackColor = AppleTextBlack,
-                            inactiveTrackColor = Color.Black.copy(alpha = 0.05f)
+                            thumbColor = adaptive.textPrimary,
+                            activeTrackColor = adaptive.textPrimary,
+                            inactiveTrackColor = adaptive.textPrimary.copy(alpha = 0.05f)
                         )
                     )
                 }
@@ -887,13 +886,13 @@ fun AddLogDialog(
                 text = viewModel.t("Eintragen", "Log"),
                 onClick = { onSave(occasion, weather, note, sprays) },
                 modifier = Modifier.padding(bottom = 12.dp),
-                containerColor = AppleTextBlack,
-                contentColor = Color.White
+                containerColor = adaptive.textPrimary,
+                contentColor = if (adaptive.isDark) Color.Black else Color.White
             )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(viewModel.t("Abbrechen", "Cancel"), color = AppleTextSecondary, fontWeight = FontWeight.SemiBold)
+                Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary, fontWeight = FontWeight.SemiBold)
             }
         }
     )
@@ -907,6 +906,7 @@ fun BulkAddDialog(
 ) {
     var text by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val adaptive = LocalAdaptiveColors.current
 
     val exampleJson = """
     [
@@ -925,14 +925,14 @@ fun BulkAddDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color.White,
+        containerColor = adaptive.glassBase,
         shape = RoundedCornerShape(32.dp),
         title = { 
             Text(
                 viewModel.t("Bulk Import", "Bulk Import"), 
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
-                color = AppleTextBlack
+                color = adaptive.textPrimary
             ) 
         },
         text = {
@@ -943,7 +943,7 @@ fun BulkAddDialog(
                         "Paste JSON or text (Brand; Name; Size; Fill; Price)."
                     ),
                     fontSize = 12.sp,
-                    color = Color.Black.copy(alpha = 0.5f),
+                    color = adaptive.textPrimary.copy(alpha = 0.5f),
                     lineHeight = 16.sp
                 )
                 
@@ -951,15 +951,15 @@ fun BulkAddDialog(
                     value = text,
                     onValueChange = { text = it },
                     modifier = Modifier.fillMaxWidth().height(200.dp),
-                    placeholder = { Text(viewModel.t("Hier einfügen...", "Paste here..."), color = Color.Gray.copy(alpha = 0.5f)) },
+                    placeholder = { Text(viewModel.t("Hier einfügen...", "Paste here..."), color = adaptive.textPrimary.copy(alpha = 0.3f)) },
                     shape = RoundedCornerShape(24.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = AppleTextBlack,
-                        unfocusedTextColor = AppleTextBlack,
-                        focusedContainerColor = Color.Black.copy(alpha = 0.03f),
-                        unfocusedContainerColor = Color.Black.copy(alpha = 0.03f),
+                        focusedTextColor = adaptive.textPrimary,
+                        unfocusedTextColor = adaptive.textPrimary,
+                        focusedContainerColor = adaptive.textPrimary.copy(alpha = 0.03f),
+                        unfocusedContainerColor = adaptive.textPrimary.copy(alpha = 0.03f),
                         focusedBorderColor = AppleAccentBlue,
-                        unfocusedBorderColor = Color.Black.copy(alpha = 0.1f)
+                        unfocusedBorderColor = adaptive.textPrimary.copy(alpha = 0.1f)
                     )
                 )
 
@@ -984,13 +984,13 @@ fun BulkAddDialog(
                     viewModel.addPerfumesFromText(text)
                     onDismiss()
                 },
-                containerColor = AppleTextBlack,
-                contentColor = Color.White
+                containerColor = adaptive.textPrimary,
+                contentColor = if (adaptive.isDark) Color.Black else Color.White
             )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(viewModel.t("Abbrechen", "Cancel"), color = AppleTextSecondary)
+                Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary)
             }
         }
     )
@@ -1007,6 +1007,7 @@ fun EditLogDialog(
     // Calculate how many sprays are available total (current + what was already used in this log)
     val totalAvailableVolume = currentPerfumeVolume + (log.sprays.toDouble() / 15.0)
     val maxAllowedSprays = (totalAvailableVolume * 15.0).toInt().coerceIn(1, 200)
+    val adaptive = LocalAdaptiveColors.current
 
     val weathers = listOf("☀️ Sonnig", "🌤 Bewölkt", "🌧 Regen", "❄️ Kalt", "🌡 Heiß")
     val occasions = listOf("Alltag", "Business", "Abend", "Date", "Sport", "Reise")
@@ -1018,14 +1019,14 @@ fun EditLogDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color.White,
+        containerColor = adaptive.glassBase,
         shape = RoundedCornerShape(32.dp),
         title = { 
             Text(
                 viewModel.t("Eintrag bearbeiten", "Edit Entry"), 
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
-                color = AppleTextBlack
+                color = adaptive.textPrimary
             ) 
         },
         text = {
@@ -1039,20 +1040,20 @@ fun EditLogDialog(
                     ) {
                         IconButton(
                             onClick = { if (sprays > 1) sprays-- },
-                            modifier = Modifier.background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
-                        ) { Icon(Icons.Default.Remove, null, tint = AppleTextBlack) }
+                            modifier = Modifier.background(adaptive.textPrimary.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+                        ) { Icon(Icons.Default.Remove, null, tint = adaptive.textPrimary) }
                         
                         Text(
                             "$sprays", 
                             fontSize = 28.sp, 
                             fontWeight = FontWeight.ExtraBold,
-                            color = AppleTextBlack
+                            color = adaptive.textPrimary
                         )
                         
                         IconButton(
                             onClick = { if (sprays < maxAllowedSprays) sprays++ },
-                            modifier = Modifier.background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
-                        ) { Icon(Icons.Default.Add, null, tint = AppleTextBlack) }
+                            modifier = Modifier.background(adaptive.textPrimary.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+                        ) { Icon(Icons.Default.Add, null, tint = adaptive.textPrimary) }
                     }
                     
                     if (sprays >= maxAllowedSprays) {
@@ -1098,21 +1099,22 @@ fun EditLogDialog(
                 onClick = {
                     onSave(log.copy(weather = weather, occasion = occasion, note = note, sprays = sprays))
                 },
-                containerColor = AppleTextBlack,
-                contentColor = Color.White
+                containerColor = adaptive.textPrimary,
+                contentColor = if (adaptive.isDark) Color.Black else Color.White
             )
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(viewModel.t("Abbrechen", "Cancel"), color = AppleTextSecondary) }
+            TextButton(onClick = onDismiss) { Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary) }
         }
     )
 }
 
 @Composable
 private fun SectionLabel(text: String) {
+    val adaptive = LocalAdaptiveColors.current
     Text(
         text.uppercase(),
-        color = AppleTextBlack.copy(alpha = 0.9f),
+        color = adaptive.textPrimary.copy(alpha = 0.9f),
         fontSize = 11.sp,
         fontWeight = FontWeight.Black,
         letterSpacing = 2.sp,

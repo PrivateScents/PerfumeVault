@@ -6,7 +6,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.*
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -33,6 +32,7 @@ import com.example.perfumevault.repository.PerfumeRepository
 import com.example.perfumevault.ui.components.*
 import com.example.perfumevault.ui.dialogs.AddPerfumeDialog
 import com.example.perfumevault.ui.screens.*
+import com.example.perfumevault.ui.theme.*
 import com.example.perfumevault.viewmodel.PerfumeViewModel
 import com.example.perfumevault.viewmodel.PerfumeViewModelFactory
 
@@ -40,13 +40,16 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: PerfumeViewModel by viewModels {
         val db = PerfumeDatabase.getDatabase(application)
-        PerfumeViewModelFactory(PerfumeRepository(db.perfumeDao(), db.usageLogDao()))
+        PerfumeViewModelFactory(application, PerfumeRepository(db.perfumeDao(), db.usageLogDao()))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PerfumeVaultApp(viewModel)
+            val isDarkMode by viewModel.isDarkMode.collectAsState()
+            PerfumeVaultTheme(darkTheme = isDarkMode) {
+                PerfumeVaultApp(viewModel)
+            }
         }
     }
 }
@@ -74,6 +77,7 @@ private val NAV_TABS = listOf(
 @Composable
 fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
     val selectedTab by viewModel.selectedTab.collectAsState()
+    val isDarkMode by viewModel.isDarkMode.collectAsState()
     viewModel.currentLanguage.collectAsState() // Observe for recomposition
     var showAddDialog by remember { mutableStateOf(false) }
     var selectedPerfumeId by remember { mutableStateOf<Int?>(null) }
@@ -106,12 +110,16 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                 val cx = size.width
                 val cy = size.height
                 
-                // Pure Light Background
-                drawRect(Color(0xFFF9F9FB))
+                // Adaptive Background
+                drawRect(if (isDarkMode) DarkBackground else SoftWhiteBackground)
                 
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFFE8E8ED).copy(alpha = 0.5f), Color.Transparent),
+                        colors = if (isDarkMode) {
+                            listOf(DarkSurface.copy(alpha = 0.5f), Color.Transparent)
+                        } else {
+                            listOf(LightGlow.copy(alpha = 0.6f), Color.Transparent)
+                        },
                         center = Offset(cx * 0.8f, cy * 0.2f),
                         radius = cx
                     ),
@@ -148,7 +156,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                 exit = fadeOut()
                             ) {
                                 Text(
-                                    when (selectedTab) {
+                                    text = when (selectedTab) {
                                         0 -> viewModel.t("Sammlung", "Collection")
                                         1 -> viewModel.t("Merkliste", "Wishlist")
                                         2 -> viewModel.t("Tagebuch", "Diary")
@@ -157,7 +165,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                     }.uppercase(),
                                     fontWeight = FontWeight.ExtraBold,
                                     fontSize = 14.sp,
-                                    color = AppleTextBlack.copy(alpha = 0.6f),
+                                    color = (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.6f),
                                     letterSpacing = 3.sp
                                 )
                             }
@@ -171,7 +179,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                     Icon(
                                         Icons.Filled.Add,
                                         contentDescription = viewModel.t("Hinzufügen", "Add"),
-                                        tint = AppleTextBlack,
+                                        tint = if (isDarkMode) Color.White else AppleTextBlack,
                                         modifier = Modifier.size(28.dp)
                                     )
                                 }
@@ -198,6 +206,11 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                             ) {
                                 NAV_TABS.forEach { tab ->
                                     val selected = selectedTab == tab.index
+                                    val iconTint = if (selected) {
+                                        if (isDarkMode) Color.White else AppleTextBlack
+                                    } else {
+                                        (if (isDarkMode) Color.White else AppleTextBlack).copy(alpha = 0.3f)
+                                    }
                                     
                                     Box(
                                         modifier = Modifier
@@ -214,7 +227,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                                 imageVector = tab.icon,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(26.dp),
-                                                tint = if (selected) AppleTextBlack else AppleTextBlack.copy(alpha = 0.3f)
+                                                tint = iconTint
                                             )
                                             if (selected) {
                                                 Spacer(Modifier.height(4.dp))
@@ -222,7 +235,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                                     Modifier
                                                         .size(4.dp)
                                                         .clip(CircleShape)
-                                                        .background(AppleTextBlack)
+                                                        .background(if (isDarkMode) Color.White else AppleTextBlack)
                                                 )
                                             }
                                         }

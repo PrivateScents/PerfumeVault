@@ -41,7 +41,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PerfumeVaultApp(viewModel)
+            val isDarkMode by viewModel.isDarkMode.collectAsState()
+            com.example.perfumevault.ui.theme.PerfumeVaultTheme(darkTheme = isDarkMode) {
+                PerfumeVaultApp(viewModel)
+            }
         }
     }
 }
@@ -63,36 +66,54 @@ private val NAV_TABS = listOf(
 fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
     val selectedTab by viewModel.selectedTab.collectAsState()
     val currentLang by viewModel.currentLanguage.collectAsState() 
+    val isDarkMode by viewModel.isDarkMode.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     var selectedPerfumeId by remember { mutableStateOf<Int?>(null) }
+
+    val bgColor = if (isDarkMode) Color(0xFF1C1C1E) else Color(0xFFF2F2F7)
+    val textColor = if (isDarkMode) Color(0xFFF2F2F7) else AppleTextBlack
+    val secondaryTextColor = if (isDarkMode) Color(0xFFAEB2B8) else AppleTextSecondary
+    val glassColor = if (isDarkMode) Color.Black.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.7f)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
-                drawRect(Color(0xFFF2F2F7)) // iOS Light Gray Background
+                drawRect(bgColor) 
                 val cx = size.width
                 val cy = size.height
 
                 // Soft pastel gradients for glass depth
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFFD1D1D6).copy(alpha = 0.4f), Color.Transparent),
-                        center = Offset(cx * 0.2f, cy * 0.2f),
-                        radius = cx * 1.5f
-                    ),
-                    radius = cx * 1.5f,
-                    center = Offset(cx * 0.2f, cy * 0.2f)
-                )
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFFE5E5EA).copy(alpha = 0.6f), Color.Transparent),
-                        center = Offset(cx * 0.8f, cy * 0.8f),
-                        radius = cx * 1.2f
-                    ),
-                    radius = cx * 1.2f,
-                    center = Offset(cx * 0.8f, cy * 0.8f)
-                )
+                if (!isDarkMode) {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0xFFD1D1D6).copy(alpha = 0.4f), Color.Transparent),
+                            center = Offset(cx * 0.2f, cy * 0.2f),
+                            radius = cx * 1.5f
+                        ),
+                        radius = cx * 1.5f,
+                        center = Offset(cx * 0.2f, cy * 0.2f)
+                    )
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0xFFE5E5EA).copy(alpha = 0.6f), Color.Transparent),
+                            center = Offset(cx * 0.8f, cy * 0.8f),
+                            radius = cx * 1.2f
+                        ),
+                        radius = cx * 1.2f,
+                        center = Offset(cx * 0.8f, cy * 0.8f)
+                    )
+                } else {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0xFF2C2C2E).copy(alpha = 0.4f), Color.Transparent),
+                            center = Offset(cx * 0.2f, cy * 0.2f),
+                            radius = cx * 1.5f
+                        ),
+                        radius = cx * 1.5f,
+                        center = Offset(cx * 0.2f, cy * 0.2f)
+                    )
+                }
             }
     ) {
         if (selectedPerfumeId != null) {
@@ -115,7 +136,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                     "PerfumeVault",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 26.sp,
-                                    color = AppleTextBlack,
+                                    color = textColor,
                                     letterSpacing = (-0.5).sp
                                 )
                                 Text(
@@ -126,7 +147,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                         else -> viewModel.t("Einstellungen", "Settings")
                                     },
                                     fontSize = 12.sp,
-                                    color = AppleTextSecondary,
+                                    color = secondaryTextColor,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -138,13 +159,13 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                         modifier = Modifier
                                             .size(42.dp)
                                             .clip(RoundedCornerShape(14.dp))
-                                            .background(AppleTextBlack.copy(alpha = 0.05f)),
+                                            .background(textColor.copy(alpha = 0.05f)),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             Icons.Filled.Add,
                                             contentDescription = "Hinzufügen",
-                                            tint = AppleTextBlack,
+                                            tint = textColor,
                                             modifier = Modifier.size(24.dp)
                                         )
                                     }
@@ -160,7 +181,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                             .fillMaxWidth()
                             .padding(horizontal = 32.dp, vertical = 20.dp)
                             .clip(RoundedCornerShape(32.dp))
-                            .background(Color.White.copy(alpha = 0.7f)) // Clearer glass bottom bar
+                            .background(glassColor) 
                     ) {
                         NavigationBar(
                             containerColor = Color.Transparent,
@@ -181,9 +202,9 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                     onClick = { viewModel.setTab(tab.index) },
                                     colors = NavigationBarItemDefaults.colors(
                                         selectedIconColor = Color.Transparent,
-                                        selectedTextColor = AppleTextBlack,
+                                        selectedTextColor = textColor,
                                         unselectedIconColor = Color.Transparent,
-                                        unselectedTextColor = AppleTextSecondary,
+                                        unselectedTextColor = secondaryTextColor,
                                         indicatorColor = Color.Transparent
                                     )
                                 )

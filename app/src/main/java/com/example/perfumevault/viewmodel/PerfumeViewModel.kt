@@ -1,5 +1,8 @@
 package com.example.perfumevault.viewmodel
 
+import android.app.Application
+import android.content.Context
+import androidx.core.content.edit
 import androidx.lifecycle.*
 import com.example.perfumevault.data.Perfume
 import com.example.perfumevault.data.UsageLog
@@ -9,13 +12,22 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.time.LocalDate
+import kotlin.math.round
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
+class PerfumeViewModel(
+    private val application: Application,
+    private val repo: PerfumeRepository
+) : AndroidViewModel(application) {
+
+    private val prefs = application.getSharedPreferences("perfume_vault_prefs", Context.MODE_PRIVATE)
 
     // --- UI State ---
-    private val _currentLanguage = MutableStateFlow("de")
+    private val _currentLanguage = MutableStateFlow(prefs.getString("language", "de") ?: "de")
     val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
+
+    private val _isDarkMode = MutableStateFlow(prefs.getBoolean("is_dark_mode", false))
+    val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -32,6 +44,12 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
     // --- Localization Helper ---
     fun setLanguage(lang: String) {
         _currentLanguage.value = lang
+        prefs.edit { putString("language", lang) }
+    }
+
+    fun setDarkMode(enabled: Boolean) {
+        _isDarkMode.value = enabled
+        prefs.edit { putBoolean("is_dark_mode", enabled) }
     }
 
     fun t(de: String, en: String): String {
@@ -220,7 +238,7 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
                 val reduction = sprays.toDouble() / 15.0
                 val newRemaining = (perfume.remainingMl - reduction).coerceIn(0.0, perfume.bottleSize.toDouble())
                 // Round to 4 decimal places to prevent floating point drift
-                val roundedRemaining = Math.round(newRemaining * 10000.0) / 10000.0
+                val roundedRemaining = round(newRemaining * 10000.0) / 10000.0
                 
                 repo.addLog(UsageLog(
                     perfumeId = perfumeId,
@@ -241,7 +259,7 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
             repo.getPerfumeById(log.perfumeId).firstOrNull()?.let { perfume ->
                 val addition = log.sprays.toDouble() / 15.0
                 val newRemaining = (perfume.remainingMl + addition).coerceIn(0.0, perfume.bottleSize.toDouble())
-                val roundedRemaining = Math.round(newRemaining * 10000.0) / 10000.0
+                val roundedRemaining = round(newRemaining * 10000.0) / 10000.0
                 repo.updateRemainingMl(perfume.id, roundedRemaining)
             }
             repo.deleteLog(log)
@@ -254,7 +272,7 @@ class PerfumeViewModel(private val repo: PerfumeRepository) : ViewModel() {
             val diff = (log.sprays - oldSprays).toDouble() / 15.0
             repo.getPerfumeById(log.perfumeId).firstOrNull()?.let { perfume ->
                 val newRemaining = (perfume.remainingMl - diff).coerceIn(0.0, perfume.bottleSize.toDouble())
-                val roundedRemaining = Math.round(newRemaining * 10000.0) / 10000.0
+                val roundedRemaining = round(newRemaining * 10000.0) / 10000.0
                 repo.updateRemainingMl(perfume.id, roundedRemaining)
             }
         }
@@ -276,11 +294,14 @@ enum class SortMode {
     }
 }
 
-class PerfumeViewModelFactory(private val repo: PerfumeRepository) : ViewModelProvider.Factory {
+class PerfumeViewModelFactory(
+    private val application: Application,
+    private val repo: PerfumeRepository
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PerfumeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return PerfumeViewModel(repo) as T
+            return PerfumeViewModel(application, repo) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

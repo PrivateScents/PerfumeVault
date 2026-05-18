@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.example.perfumevault.data.UsageLog
 import com.example.perfumevault.data.Perfume
 import com.example.perfumevault.ui.components.*
+import com.example.perfumevault.ui.theme.*
 import com.example.perfumevault.viewmodel.PerfumeViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -38,6 +39,7 @@ import java.util.Locale
 fun DiaryScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
     val logs by viewModel.allLogs.collectAsState()
     val perfumes by viewModel.unfilteredPerfumes.collectAsState()
+    val adaptive = LocalAdaptiveColors.current
     viewModel.currentLanguage.collectAsState() 
 
     var editingLog by remember { mutableStateOf<UsageLog?>(null) }
@@ -70,12 +72,12 @@ fun DiaryScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                 Spacer(Modifier.height(12.dp))
                 Text(
                     viewModel.t("Noch keine Einträge", "No entries yet"), 
-                    color = AppleTextSecondary, 
+                    color = adaptive.textSecondary, 
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     viewModel.t("Wähle einen Duft aus und tippe 'Heute getragen'", "Select a fragrance and tap 'Worn Today'"), 
-                    color = AppleTextSecondary.copy(alpha = 0.6f), 
+                    color = adaptive.textSecondary.copy(alpha = 0.6f), 
                     fontSize = 12.sp
                 )
             }
@@ -142,6 +144,7 @@ fun DiaryScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
 
 @Composable
 fun DateHeader(dateStr: String, viewModel: PerfumeViewModel) {
+    val adaptive = LocalAdaptiveColors.current
     val currentLanguage by viewModel.currentLanguage.collectAsState()
     val locale = remember(currentLanguage) { if (currentLanguage == "de") Locale.GERMAN else Locale.ENGLISH }
 
@@ -159,7 +162,7 @@ fun DateHeader(dateStr: String, viewModel: PerfumeViewModel) {
     Text(
         text = label.uppercase(),
         modifier = Modifier.padding(top = 24.dp, bottom = 8.dp, start = 4.dp),
-        color = AppleTextBlack.copy(alpha = 0.4f),
+        color = adaptive.textPrimary.copy(alpha = 0.4f),
         fontSize = 11.sp,
         fontWeight = FontWeight.ExtraBold,
         letterSpacing = 2.sp
@@ -169,6 +172,7 @@ fun DateHeader(dateStr: String, viewModel: PerfumeViewModel) {
 @Composable
 fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, volAfter: Double, onDelete: () -> Unit, onPerfumeClick: () -> Unit, onEditClick: () -> Unit) {
     var showDelete by remember { mutableStateOf(false) }
+    val adaptive = LocalAdaptiveColors.current
 
     GlassCard(
         modifier = Modifier
@@ -186,7 +190,7 @@ fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, volAft
                 Text(
                     perfume.brand.uppercase(),
                     fontSize = 11.sp,
-                    color = AppleTextSecondary,
+                    color = adaptive.textSecondary,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
                 )
@@ -194,7 +198,7 @@ fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, volAft
                     perfume.name, 
                     fontSize = 20.sp, 
                     fontWeight = FontWeight.Bold, 
-                    color = AppleTextBlack
+                    color = adaptive.textPrimary
                 )
             }
 
@@ -234,7 +238,7 @@ fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, volAft
                             volAfter
                         ),
                         fontSize = 9.sp,
-                        color = AppleTextSecondary,
+                        color = adaptive.textSecondary,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(top = 2.dp, end = 4.dp)
                     )
@@ -253,7 +257,7 @@ fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, volAft
             Text(
                 "„${log.note}“",
                 fontSize = 13.sp,
-                color = AppleTextBlack.copy(alpha = 0.7f),
+                color = adaptive.textPrimary.copy(alpha = 0.7f),
                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                 fontWeight = FontWeight.Medium
             )
@@ -270,7 +274,7 @@ fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, volAft
                 }
                 Spacer(Modifier.width(8.dp))
                 TextButton(onClick = { showDelete = false }) {
-                    Text(viewModel.t("Abbrechen", "Cancel"), color = AppleTextSecondary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -289,6 +293,7 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
     val allLogs by viewModel.allLogs.collectAsState()
     val mostUsed by viewModel.mostUsed.collectAsState()
     val perfumes by viewModel.unfilteredPerfumes.collectAsState()
+    val adaptive = LocalAdaptiveColors.current
 
     val top5 = remember(perfumes) { perfumes.sortedByDescending { it.rating }.take(5) }
 
@@ -299,18 +304,18 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                     Icons.Default.BarChart, 
                     contentDescription = null, 
                     modifier = Modifier.size(64.dp), 
-                    tint = AppleTextSecondary.copy(alpha = 0.2f)
+                    tint = adaptive.textSecondary.copy(alpha = 0.2f)
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
                     viewModel.t("Noch keine Daten", "No data yet"), 
-                    color = AppleTextBlack, 
+                    color = adaptive.textPrimary, 
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
                 )
                 Text(
                     viewModel.t("Füge Düfte hinzu, um Statistiken zu sehen.", "Add fragrances to see statistics."), 
-                    color = AppleTextSecondary.copy(alpha = 0.5f), 
+                    color = adaptive.textSecondary.copy(alpha = 0.5f), 
                     fontSize = 13.sp
                 )
             }
@@ -331,7 +336,7 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
                 Text(
                     viewModel.t("Statistiken", "Statistics"),
-                    color = AppleTextBlack,
+                    color = adaptive.textPrimary,
                     fontSize = 40.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = (-1.5).sp,
@@ -342,7 +347,7 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                 )
                 Text(
                     viewModel.t("Ein tieferer Einblick in deine Sammlung", "A deep dive into your collection"),
-                    color = AppleTextBlack.copy(alpha = 0.6f),
+                    color = adaptive.textPrimary.copy(alpha = 0.6f),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -413,7 +418,7 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                                 modifier = Modifier
                                     .size(72.dp)
                                     .clip(RoundedCornerShape(20.dp))
-                                    .background(Color.Black.copy(alpha = 0.04f)),
+                                    .background(adaptive.textPrimary.copy(alpha = 0.04f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = AppleAccentBlue, modifier = Modifier.size(36.dp))
@@ -428,14 +433,14 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                                 )
                                 Text(
                                     mostUsed!!.name,
-                                    color = AppleTextBlack,
+                                    color = adaptive.textPrimary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 24.sp,
                                     lineHeight = 28.sp
                                 )
                                 Text(
                                     mostUsed!!.brand.uppercase(),
-                                    color = AppleTextBlack.copy(alpha = 0.5f),
+                                    color = adaptive.textPrimary.copy(alpha = 0.5f),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     letterSpacing = 0.5.sp
@@ -505,21 +510,21 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                             ) {
                                 Text(
                                     "${index + 1}",
-                                    color = Color.Black.copy(alpha = 0.1f),
+                                    color = adaptive.textPrimary.copy(alpha = 0.1f),
                                     fontSize = 28.sp,
                                     fontWeight = FontWeight.Black
                                 )
                                 Column {
                                     Text(
                                         perfume.name, 
-                                        color = AppleTextBlack, 
+                                        color = adaptive.textPrimary, 
                                         fontWeight = FontWeight.Bold, 
                                         fontSize = 18.sp,
                                         maxLines = 1
                                     )
                                     Text(
                                         perfume.brand.uppercase(), 
-                                        color = AppleTextSecondary, 
+                                        color = adaptive.textSecondary, 
                                         fontSize = 10.sp, 
                                         fontWeight = FontWeight.Bold,
                                         letterSpacing = 1.sp
@@ -576,6 +581,7 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
 
 @Composable
 fun FillStatItem(label: String, count: Int, color: Color) {
+    val adaptive = LocalAdaptiveColors.current
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 8.dp)) {
         Box(
             modifier = Modifier
@@ -586,13 +592,13 @@ fun FillStatItem(label: String, count: Int, color: Color) {
         Spacer(Modifier.height(4.dp))
         Text(
             "$count", 
-            color = AppleTextBlack, 
+            color = adaptive.textPrimary, 
             fontWeight = FontWeight.Bold, 
             fontSize = 18.sp
         )
         Text(
             label, 
-            color = AppleTextBlack.copy(alpha = 0.5f), 
+            color = adaptive.textPrimary.copy(alpha = 0.5f), 
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold
         )
@@ -606,6 +612,7 @@ fun MetricCard(
     value: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector
 ) {
+    val adaptive = LocalAdaptiveColors.current
     val numericValue = remember(value) { value.replace(",", ".").filter { it.isDigit() || it == '.' }.toDoubleOrNull() ?: 0.0 }
     val animatedValue by animateFloatAsState(
         targetValue = numericValue.toFloat(),
@@ -628,7 +635,7 @@ fun MetricCard(
             Icon(
                 icon, 
                 contentDescription = null, 
-                tint = Color.Black.copy(alpha = 0.1f),
+                tint = adaptive.textPrimary.copy(alpha = 0.1f),
                 modifier = Modifier.size(24.dp)
             )
             Spacer(Modifier.height(16.dp))
@@ -636,13 +643,13 @@ fun MetricCard(
                 displayValue, 
                 fontWeight = FontWeight.Black, 
                 fontSize = 28.sp, 
-                color = AppleTextBlack, 
+                color = adaptive.textPrimary, 
                 letterSpacing = (-0.5).sp
             )
             Text(
                 label, 
                 fontSize = 11.sp, 
-                color = AppleTextSecondary, 
+                color = adaptive.textSecondary, 
                 fontWeight = FontWeight.Bold, 
                 letterSpacing = 0.5.sp
             )
@@ -653,8 +660,10 @@ fun MetricCard(
 @Composable
 fun SettingsScreen(viewModel: PerfumeViewModel) {
     val currentLang by viewModel.currentLanguage.collectAsState()
+    val isDarkMode by viewModel.isDarkMode.collectAsState()
     val perfumes by viewModel.unfilteredPerfumes.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val adaptive = LocalAdaptiveColors.current
     
     val scope = rememberCoroutineScope()
     
@@ -668,11 +677,23 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
         item {
             Text(
                 viewModel.t("Einstellungen", "Settings"),
-                color = AppleTextBlack,
+                color = adaptive.textPrimary,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-1.5).sp
             )
+        }
+
+        // --- SECTION: APPEARANCE ---
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SectionHeader(viewModel.t("Erscheinungsbild", "Appearance"))
+                GlassToggle(
+                    label = viewModel.t("Dunkler Modus", "Dark Mode"),
+                    checked = isDarkMode,
+                    onCheckedChange = { viewModel.setDarkMode(it) }
+                )
+            }
         }
 
         // --- SECTION: LANGUAGE ---
@@ -691,13 +712,13 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
                                     .weight(1f)
                                     .height(44.dp)
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(if (selected) AppleTextBlack else Color.Transparent)
+                                    .background(if (selected) adaptive.textPrimary else Color.Transparent)
                                     .clickable { viewModel.setLanguage(code) },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     label,
-                                    color = if (selected) Color.White else AppleTextBlack.copy(alpha = 0.6f),
+                                    color = if (selected) (if (adaptive.isDark) Color.Black else Color.White) else adaptive.textPrimary.copy(alpha = 0.6f),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp
                                 )
@@ -760,22 +781,22 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
                 GlassSurface(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text(
-                            "PerfumeVault v1.4", 
-                            color = AppleTextBlack, 
+                            "PerfumeVault v1.6",
+                            color = adaptive.textPrimary, 
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             viewModel.t("Deine digitale Vitrine für exklusive Düfte.", "Your digital cabinet for exclusive fragrances."),
-                            color = AppleTextBlack.copy(alpha = 0.5f),
+                            color = adaptive.textPrimary.copy(alpha = 0.5f),
                             fontSize = 13.sp,
                             lineHeight = 18.sp
                         )
                         Spacer(Modifier.height(16.dp))
                         Text(
                             "© 2024 PerfumeVault Team",
-                            color = AppleTextBlack.copy(alpha = 0.3f),
+                            color = adaptive.textPrimary.copy(alpha = 0.3f),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -802,14 +823,15 @@ fun SettingsActionCard(
     contentColor: Color? = null,
     onClick: () -> Unit
 ) {
-    val finalColor = contentColor ?: AppleTextBlack
+    val adaptive = LocalAdaptiveColors.current
+    val finalColor = contentColor ?: adaptive.textPrimary
     
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .clickable { onClick() }
-            .background(Color.Black.copy(alpha = 0.02f))
+            .background(adaptive.textPrimary.copy(alpha = 0.02f))
             .padding(20.dp)
     ) {
         Row(
@@ -841,6 +863,7 @@ fun SettingsActionCard(
 
 @Composable
 fun TypeBar(label: String, fraction: Float, count: Int) {
+    val adaptive = LocalAdaptiveColors.current
     val animatedFraction by animateFloatAsState(
         targetValue = fraction,
         animationSpec = tween(1400, easing = FastOutSlowInEasing),
@@ -854,13 +877,13 @@ fun TypeBar(label: String, fraction: Float, count: Int) {
         ) {
             Text(
                 label, 
-                color = AppleTextBlack, 
+                color = adaptive.textPrimary, 
                 fontSize = 15.sp, 
                 fontWeight = FontWeight.Bold
             )
             Text(
                 "$count", 
-                color = AppleTextBlack.copy(alpha = 0.3f), 
+                color = adaptive.textPrimary.copy(alpha = 0.3f), 
                 fontSize = 13.sp, 
                 fontWeight = FontWeight.Bold
             )
@@ -870,7 +893,7 @@ fun TypeBar(label: String, fraction: Float, count: Int) {
                 .fillMaxWidth()
                 .height(6.dp)
                 .clip(CircleShape)
-                .background(Color.Black.copy(alpha = 0.05f))
+                .background(adaptive.textPrimary.copy(alpha = 0.05f))
         ) {
             Box(
                 modifier = Modifier
@@ -889,9 +912,10 @@ fun TypeBar(label: String, fraction: Float, count: Int) {
 
 @Composable
 fun SectionHeader(text: String) {
+    val adaptive = LocalAdaptiveColors.current
     Text(
         text,
-        color = AppleTextSecondary,
+        color = adaptive.textSecondary,
         fontWeight = FontWeight.Bold,
         fontSize = 14.sp,
         letterSpacing = 0.3.sp

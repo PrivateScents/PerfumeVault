@@ -1,6 +1,5 @@
 package com.example.perfumevault.ui.screens
 
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -26,6 +25,8 @@ import coil.compose.AsyncImage
 import com.example.perfumevault.data.Perfume
 import com.example.perfumevault.ui.components.*
 import com.example.perfumevault.ui.dialogs.AddLogDialog
+import com.example.perfumevault.ui.theme.LocalAdaptiveColors
+import com.example.perfumevault.ui.theme.GoldAccent
 import com.example.perfumevault.viewmodel.PerfumeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -38,10 +39,11 @@ fun DetailScreen(
 ) {
     val perfume by viewModel.getPerfumeById(perfumeId).collectAsState(initial = null)
     val logs by viewModel.getLogsForPerfume(perfumeId).collectAsState(initial = emptyList())
+    val adaptive = LocalAdaptiveColors.current
 
     if (perfume == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = AppleTextBlack)
+            CircularProgressIndicator(color = adaptive.textPrimary)
         }
         return
     }
@@ -62,16 +64,16 @@ fun DetailScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack, 
                             null, 
-                            tint = AppleTextBlack
+                            tint = adaptive.textPrimary
                         )
                     }
                 },
                 actions = {
                     IconButton(onClick = { showEditDialog = true }) {
-                        Icon(Icons.Default.Edit, null, tint = AppleTextBlack)
+                        Icon(Icons.Default.Edit, null, tint = adaptive.textPrimary)
                     }
                     IconButton(onClick = { showDeleteConfirm = true }) {
-                        Icon(Icons.Default.Delete, null, tint = AppleTextSecondary.copy(alpha = 0.5f))
+                        Icon(Icons.Default.Delete, null, tint = adaptive.textSecondary.copy(alpha = 0.5f))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -82,9 +84,7 @@ fun DetailScreen(
                 HighVisibilityButton(
                     text = viewModel.t("Heute getragen", "Worn Today"),
                     onClick = { showLogDialog = true },
-                    modifier = Modifier.padding(bottom = 32.dp),
-                    containerColor = AppleTextBlack,
-                    contentColor = Color.White
+                    modifier = Modifier.padding(bottom = 32.dp)
                 )
             }
         },
@@ -108,21 +108,21 @@ fun DetailScreen(
                             .fillMaxWidth()
                             .height(400.dp)
                             .clip(RoundedCornerShape(40.dp))
-                            .background(Color.Black.copy(alpha = 0.02f))
+                            .background(adaptive.textPrimary.copy(alpha = 0.02f))
                     ) {
                         if (currentPerfume.imageUrl.isNotEmpty()) {
                             AsyncImage(
                                 model = currentPerfume.imageUrl,
                                 contentDescription = null,
-                                modifier = Modifier.fillMaxSize().padding(48.dp),
-                                contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
                             )
                         } else {
                             Icon(
                                 Icons.Default.Image, 
                                 null, 
                                 modifier = Modifier.size(64.dp).align(Alignment.Center), 
-                                tint = Color.Black.copy(alpha = 0.05f)
+                                tint = adaptive.textPrimary.copy(alpha = 0.05f)
                             )
                         }
                         
@@ -143,13 +143,13 @@ fun DetailScreen(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 4.sp,
-                        color = AppleTextBlack.copy(alpha = 0.6f)
+                        color = adaptive.textPrimary.copy(alpha = 0.6f)
                     )
                     Text(
                         currentPerfume.name,
                         fontSize = 42.sp,
                         fontWeight = FontWeight.Bold,
-                        color = AppleTextBlack,
+                        color = adaptive.textPrimary,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         lineHeight = 48.sp,
                         letterSpacing = (-1.5).sp
@@ -157,13 +157,13 @@ fun DetailScreen(
                     Spacer(Modifier.height(12.dp))
                     // Clean dark rating
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Star, null, modifier = Modifier.size(16.dp), tint = AppleTextBlack)
+                        Icon(Icons.Default.Star, null, modifier = Modifier.size(16.dp), tint = adaptive.textPrimary)
                         Spacer(Modifier.width(6.dp))
                         Text(
                             "%.1f".format(currentPerfume.rating),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
-                            color = AppleTextBlack
+                            color = adaptive.textPrimary
                         )
                     }
                 }
@@ -201,13 +201,13 @@ fun DetailScreen(
                             fontSize = 10.sp,
                             fontWeight = FontWeight.ExtraBold,
                             letterSpacing = 1.sp,
-                            color = AppleTextBlack.copy(alpha = 0.4f)
+                            color = adaptive.textPrimary.copy(alpha = 0.4f)
                         )
                         Text(
                             "${"%.1f".format(remainingMl)} / ${currentPerfume.bottleSize} ml",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = AppleTextBlack
+                            color = adaptive.textPrimary
                         )
                     }
 
@@ -224,7 +224,7 @@ fun DetailScreen(
                             .fillMaxWidth()
                             .height(8.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .background(Color.Black.copy(alpha = 0.05f))
+                            .background(adaptive.textPrimary.copy(alpha = 0.05f))
                     ) {
                         Box(
                             modifier = Modifier
@@ -267,7 +267,7 @@ fun DetailScreen(
                         Text(
                             currentPerfume.notes,
                             fontSize = 16.sp,
-                            color = AppleTextBlack.copy(alpha = 0.7f),
+                            color = adaptive.textPrimary.copy(alpha = 0.7f),
                             lineHeight = 24.sp
                         )
                     }
@@ -295,9 +295,9 @@ fun DetailScreen(
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            containerColor = Color.White,
+            containerColor = adaptive.glassBase,
             shape = RoundedCornerShape(28.dp),
-            title = { Text(viewModel.t("Löschen?", "Delete?"), fontWeight = FontWeight.Bold) },
+            title = { Text(viewModel.t("Löschen?", "Delete?"), fontWeight = FontWeight.Bold, color = adaptive.textPrimary) },
             confirmButton = {
                 TextButton(onClick = { viewModel.deletePerfume(currentPerfume); onDelete() }) {
                     Text(viewModel.t("Löschen", "Delete"), color = Color.Red)
@@ -305,7 +305,7 @@ fun DetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text(viewModel.t("Abbrechen", "Cancel"))
+                    Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary)
                 }
             }
         )
@@ -344,6 +344,7 @@ private fun percentage(current: Double, total: Int): Int = (current / total.toDo
 
 @Composable
 fun InfoTile(modifier: Modifier, label: String, value: String) {
+    val adaptive = LocalAdaptiveColors.current
     GlassSurface(
         modifier = modifier.height(80.dp),
         cornerRadius = 20.dp
@@ -352,45 +353,48 @@ fun InfoTile(modifier: Modifier, label: String, value: String) {
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.Center
         ) {
-            Text(label.uppercase(), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.Black.copy(alpha = 0.4f), letterSpacing = 1.sp)
-            Text(value, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+            Text(label.uppercase(), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = adaptive.textPrimary.copy(alpha = 0.4f), letterSpacing = 1.sp)
+            Text(value, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = adaptive.textPrimary)
         }
     }
 }
 
 @Composable
 fun TimelineItem(log: com.example.perfumevault.data.UsageLog) {
+    val adaptive = LocalAdaptiveColors.current
     GlassCard {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(log.date, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
-            Text("${log.sprays} sprays", fontSize = 14.sp, color = Color.Black.copy(alpha = 0.5f))
+            Text(log.date, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = adaptive.textPrimary)
+            Text("${log.sprays} sprays", fontSize = 14.sp, color = adaptive.textPrimary.copy(alpha = 0.5f))
         }
         if (log.note.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text(log.note, fontSize = 13.sp, color = Color.Black.copy(alpha = 0.7f))
+            Text(log.note, fontSize = 13.sp, color = adaptive.textPrimary.copy(alpha = 0.7f))
         }
     }
 }
 
 @Composable
 fun DetailRow(label: String, value: String) {
+    val adaptive = LocalAdaptiveColors.current
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, color = AppleTextSecondary, fontSize = 13.sp)
-        Text(value, color = AppleTextBlack, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(label, color = adaptive.textSecondary, fontSize = 13.sp)
+        Text(value, color = adaptive.textPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
 @Composable
 private fun SectionLabel(text: String) {
+    val adaptive = LocalAdaptiveColors.current
     Text(
         text,
         fontSize = 10.sp,
         fontWeight = FontWeight.ExtraBold,
         letterSpacing = 2.sp,
-        color = AppleTextBlack.copy(alpha = 0.9f),
+        color = adaptive.textPrimary.copy(alpha = 0.9f),
         modifier = Modifier.padding(start = 4.dp)
     )
 }

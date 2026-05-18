@@ -1,6 +1,5 @@
 package com.example.perfumevault.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -36,6 +35,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.perfumevault.data.Perfume
 import com.example.perfumevault.ui.components.*
+import com.example.perfumevault.ui.theme.LocalAdaptiveColors
+import com.example.perfumevault.ui.theme.AppleAccentBlue
 import com.example.perfumevault.viewmodel.PerfumeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -48,6 +49,7 @@ fun WishlistScreen(
 ) {
     val perfumes by viewModel.wishlistPerfumes.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val adaptive = LocalAdaptiveColors.current
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -69,7 +71,7 @@ fun WishlistScreen(
                     Icon(
                         Icons.Default.Search, 
                         null, 
-                        tint = Color.Black.copy(alpha = 0.3f),
+                        tint = adaptive.textPrimary.copy(alpha = 0.3f),
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(12.dp))
@@ -78,7 +80,7 @@ fun WishlistScreen(
                         onValueChange = viewModel::setSearchQuery,
                         modifier = Modifier.weight(1f),
                         textStyle = androidx.compose.ui.text.TextStyle(
-                            color = AppleTextBlack,
+                            color = adaptive.textPrimary,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Medium
                         ),
@@ -89,7 +91,7 @@ fun WishlistScreen(
                                 if (searchQuery.isEmpty()) {
                                     Text(
                                         viewModel.t("Wünsche durchsuchen...", "Search wishes..."),
-                                        color = Color.Black.copy(alpha = 0.2f),
+                                        color = adaptive.textPrimary.copy(alpha = 0.2f),
                                         fontSize = 15.sp
                                     )
                                 }
@@ -99,7 +101,7 @@ fun WishlistScreen(
                     )
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { viewModel.setSearchQuery("") }) {
-                            Icon(Icons.Default.Close, null, modifier = Modifier.size(18.dp), tint = Color.Black.copy(alpha = 0.3f))
+                            Icon(Icons.Default.Close, null, modifier = Modifier.size(18.dp), tint = adaptive.textPrimary.copy(alpha = 0.3f))
                         }
                     }
                 }
@@ -112,12 +114,12 @@ fun WishlistScreen(
                     Text(
                         "✦", 
                         fontSize = 48.sp, 
-                        color = Color.Black.copy(alpha = 0.1f)
+                        color = adaptive.textPrimary.copy(alpha = 0.1f)
                     )
                     Spacer(Modifier.height(24.dp))
                     Text(
                         viewModel.t("Keine Wünsche gefunden", "No wishes found"), 
-                        color = AppleTextBlack, 
+                        color = adaptive.textPrimary, 
                         fontWeight = FontWeight.Bold, 
                         fontSize = 18.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -176,6 +178,7 @@ fun WishlistCard(
     onBuy: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val adaptive = LocalAdaptiveColors.current
     var isMoving by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     
@@ -216,21 +219,21 @@ fun WishlistCard(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color.Black.copy(alpha = 0.02f))
+                        .background(adaptive.textPrimary.copy(alpha = 0.02f))
                 ) {
                     if (perfume.imageUrl.isNotEmpty()) {
                         AsyncImage(
                             model = perfume.imageUrl,
                             contentDescription = null,
-                            modifier = Modifier.fillMaxSize().padding(12.dp),
-                            contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
                         )
                     } else {
                         Icon(
                             Icons.Default.ShoppingBag, 
                             null, 
                             modifier = Modifier.size(32.dp).align(Alignment.Center), 
-                            tint = Color.Black.copy(alpha = 0.1f)
+                            tint = adaptive.textPrimary.copy(alpha = 0.1f)
                         )
                     }
                 }
@@ -241,13 +244,13 @@ fun WishlistCard(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 2.sp,
-                        color = AppleTextBlack.copy(alpha = 0.4f)
+                        color = adaptive.textPrimary.copy(alpha = 0.4f)
                     )
                     Text(
                         perfume.name,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = AppleTextBlack
+                        color = adaptive.textPrimary
                     )
                     
                     Spacer(Modifier.height(16.dp))
@@ -267,8 +270,8 @@ fun WishlistCard(
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                             modifier = Modifier.height(38.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Black,
-                                contentColor = Color.White
+                                containerColor = adaptive.textPrimary,
+                                contentColor = if (adaptive.isDark) Color.Black else Color.White
                             ),
                             shape = RoundedCornerShape(12.dp)
                         ) {

@@ -1,6 +1,5 @@
 package com.example.perfumevault.ui.components
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -24,12 +23,7 @@ import androidx.compose.foundation.border
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-// Luxury Modern Palette
-val AppleTextBlack = Color(0xFF1D1D1F)
-val AppleTextSecondary = Color(0xFF86868B)
-val AppleAccentBlue = Color(0xFF007AFF)
-val GoldAccent = Color(0xFFD4AF37)
+import com.example.perfumevault.ui.theme.*
 
 @Composable
 fun GlassSurface(
@@ -38,8 +32,9 @@ fun GlassSurface(
     alpha: Float = 0.7f,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val baseColor = Color.White
-    val borderColor = Color.Black.copy(alpha = 0.08f)
+    val adaptive = LocalAdaptiveColors.current
+    val baseColor = adaptive.glassBase
+    val borderColor = adaptive.glassBorder
     
     Box(
         modifier = modifier
@@ -69,6 +64,7 @@ fun GlassCard(
         animationSpec = spring(dampingRatio = 0.8f, stiffness = 300f),
         label = "cardScale"
     )
+    val adaptive = LocalAdaptiveColors.current
 
     Box(
         modifier = modifier
@@ -92,10 +88,10 @@ fun GlassCard(
                     }
                 } else Modifier
             )
-            .background(Color.White.copy(alpha = 0.92f))
+            .background(adaptive.glassBase.copy(alpha = if (adaptive.isDark) 0.6f else 0.92f))
             .border(
                 width = 0.5.dp,
-                color = Color.Black.copy(alpha = 0.08f),
+                color = adaptive.glassBorder,
                 shape = RoundedCornerShape(28.dp)
             )
     ) {
@@ -145,9 +141,13 @@ fun HighVisibilityButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color = AppleTextBlack,
-    contentColor: Color = Color.White
+    containerColor: Color? = null,
+    contentColor: Color? = null
 ) {
+    val adaptive = LocalAdaptiveColors.current
+    val finalContainerColor = containerColor ?: adaptive.textPrimary
+    val finalContentColor = contentColor ?: (if (adaptive.isDark) Color.Black else Color.White)
+    
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
@@ -165,8 +165,8 @@ fun HighVisibilityButton(
             },
         shape = RoundedCornerShape(27.dp), // Pill shape
         colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = contentColor
+            containerColor = finalContainerColor,
+            contentColor = finalContentColor
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
         contentPadding = PaddingValues(horizontal = 32.dp)
@@ -180,57 +180,25 @@ fun HighVisibilityButton(
     }
 }
 
-@Composable
-fun AnimatedRatingBar(
-    rating: Double,
-    modifier: Modifier = Modifier,
-    maxRating: Int = 10
-) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        repeat(maxRating) { index ->
-            val fillAmount = (rating - index).coerceIn(0.0, 1.0)
-            val animatedAlpha by animateFloatAsState(
-                targetValue = if (fillAmount > 0) 1f else 0.15f,
-                animationSpec = tween(300, delayMillis = index * 20),
-                label = "alpha"
-            )
-            
-            Box(
-                modifier = Modifier
-                    .size(if (fillAmount >= 1.0) 7.dp else if (fillAmount > 0) 6.dp else 5.dp)
-                    .clip(CircleShape)
-                    .background(AppleTextBlack.copy(alpha = animatedAlpha))
-            )
-        }
-        
-        Spacer(Modifier.width(6.dp))
-        Text(
-            "%.1f".format(rating),
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Black,
-            color = AppleAccentBlue
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GlassTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    hint: String? = null,
     modifier: Modifier = Modifier,
+    hint: String? = null,
     singleLine: Boolean = true,
     keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default
 ) {
+    val adaptive = LocalAdaptiveColors.current
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             label.uppercase(), 
             fontSize = 10.sp, 
             fontWeight = FontWeight.ExtraBold, 
             letterSpacing = 1.5.sp,
-            color = AppleTextBlack.copy(alpha = 0.7f)
+            color = adaptive.textPrimary.copy(alpha = 0.7f)
         )
         OutlinedTextField(
             value = value,
@@ -239,33 +207,16 @@ fun GlassTextField(
             singleLine = singleLine,
             keyboardOptions = keyboardOptions,
             shape = RoundedCornerShape(16.dp),
-            placeholder = hint?.let { { Text(it, fontSize = 14.sp, color = Color.Gray.copy(alpha = 0.5f)) } },
+            placeholder = hint?.let { { Text(it, fontSize = 14.sp, color = adaptive.textSecondary.copy(alpha = 0.5f)) } },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.Black.copy(alpha = 0.03f),
-                unfocusedContainerColor = Color.Black.copy(alpha = 0.02f),
+                focusedContainerColor = adaptive.textPrimary.copy(alpha = 0.03f),
+                unfocusedContainerColor = adaptive.textPrimary.copy(alpha = 0.02f),
                 focusedBorderColor = AppleAccentBlue,
-                unfocusedBorderColor = Color.Black.copy(alpha = 0.15f),
-                focusedTextColor = AppleTextBlack,
-                unfocusedTextColor = AppleTextBlack
+                unfocusedBorderColor = adaptive.textPrimary.copy(alpha = 0.15f),
+                focusedTextColor = adaptive.textPrimary,
+                unfocusedTextColor = adaptive.textPrimary
             )
         )
-    }
-}
-
-@Composable
-fun StatChip(label: String, value: String) {
-    GlassSurface(
-        modifier = Modifier,
-        cornerRadius = 20.dp,
-        alpha = 0.6f
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(value, fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppleTextBlack)
-            Text(label, fontSize = 11.sp, color = AppleTextSecondary, fontWeight = FontWeight.Bold)
-        }
     }
 }
 
@@ -275,13 +226,14 @@ fun SelectableChip(
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val adaptive = LocalAdaptiveColors.current
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        color = if (selected) AppleTextBlack else Color.Black.copy(alpha = 0.05f),
-        contentColor = if (selected) Color.White else AppleTextBlack.copy(alpha = 0.7f),
+        color = if (selected) adaptive.textPrimary else adaptive.textPrimary.copy(alpha = 0.05f),
+        contentColor = if (selected) (if (adaptive.isDark) Color.Black else Color.White) else adaptive.textPrimary.copy(alpha = 0.7f),
         modifier = Modifier.height(38.dp),
-        border = if (!selected) BorderStroke(0.5.dp, Color.Black.copy(alpha = 0.1f)) else null
+        border = if (!selected) BorderStroke(0.5.dp, adaptive.textPrimary.copy(alpha = 0.1f)) else null
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 16.dp)) {
             Text(
@@ -296,13 +248,14 @@ fun SelectableChip(
 
 @Composable
 fun LogChip(label: String) {
+    val adaptive = LocalAdaptiveColors.current
     Text(
         text = label,
         modifier = Modifier
-            .background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+            .background(adaptive.textPrimary.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
             .padding(horizontal = 10.dp, vertical = 6.dp),
         fontSize = 11.sp,
-        color = AppleTextBlack,
+        color = adaptive.textPrimary,
         fontWeight = FontWeight.Bold
     )
 }
@@ -313,6 +266,7 @@ fun GlassToggle(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val adaptive = LocalAdaptiveColors.current
     GlassSurface(
         modifier = Modifier.fillMaxWidth(),
         cornerRadius = 20.dp,
@@ -327,7 +281,7 @@ fun GlassToggle(
         ) {
             Text(
                 label, 
-                color = AppleTextBlack, 
+                color = adaptive.textPrimary, 
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
@@ -335,11 +289,11 @@ fun GlassToggle(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
+                    checkedThumbColor = if (adaptive.isDark) Color.Black else Color.White,
                     checkedTrackColor = AppleAccentBlue,
                     uncheckedThumbColor = Color.Gray,
-                    uncheckedTrackColor = Color.Black.copy(alpha = 0.05f),
-                    uncheckedBorderColor = Color.Black.copy(alpha = 0.1f)
+                    uncheckedTrackColor = adaptive.textPrimary.copy(alpha = 0.05f),
+                    uncheckedBorderColor = adaptive.textPrimary.copy(alpha = 0.1f)
                 )
             )
         }
