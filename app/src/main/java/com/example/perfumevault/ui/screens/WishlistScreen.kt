@@ -7,12 +7,13 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -35,8 +36,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.perfumevault.data.Perfume
 import com.example.perfumevault.ui.components.*
-import com.example.perfumevault.ui.theme.LocalAdaptiveColors
-import com.example.perfumevault.ui.theme.AppleAccentBlue
+import com.example.perfumevault.ui.theme.*
 import com.example.perfumevault.viewmodel.PerfumeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -108,6 +108,8 @@ fun WishlistScreen(
             }
         }
 
+        Spacer(Modifier.height(8.dp))
+
         if (perfumes.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
@@ -131,28 +133,8 @@ fun WishlistScreen(
                 contentPadding = PaddingValues(bottom = 120.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                itemsIndexed(perfumes, key = { _, p -> p.id }) { index, perfume ->
-                    var isEntryVisible by remember { mutableStateOf(false) }
-                    LaunchedEffect(Unit) { isEntryVisible = true }
-
-                    val enterScale by animateFloatAsState(
-                        targetValue = if (isEntryVisible) 1f else 0.9f,
-                        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow),
-                        label = "entryScale"
-                    )
-
-                    val alpha by animateFloatAsState(
-                        targetValue = if (isEntryVisible) 1f else 0f,
-                        animationSpec = tween(500, delayMillis = (index * 40).coerceAtMost(400)),
-                        label = "entryAlpha"
-                    )
-
+                items(items = perfumes, key = { it.id }) { perfume ->
                     WishlistCard(
-                        modifier = Modifier.graphicsLayer {
-                            scaleX = enterScale
-                            scaleY = enterScale
-                            this.alpha = alpha
-                        },
                         perfume = perfume,
                         viewModel = viewModel,
                         onClick = { onPerfumeClick(perfume) },
@@ -253,7 +235,20 @@ fun WishlistCard(
                         color = adaptive.textPrimary
                     )
                     
-                    Spacer(Modifier.height(16.dp))
+                    if (perfume.season.isNotEmpty() && perfume.season != "Alle") {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            viewModel.translateSeason(perfume.season),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = adaptive.textPrimary.copy(alpha = 0.5f),
+                            modifier = Modifier
+                                .background(adaptive.textPrimary.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                    
+                    Spacer(Modifier.height(12.dp))
                     
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

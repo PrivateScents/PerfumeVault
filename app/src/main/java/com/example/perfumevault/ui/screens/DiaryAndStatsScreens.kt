@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
@@ -550,32 +549,6 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                 }
             }
         }
-
-        // --- FRAGRANCE FAMILIES ---
-        item {
-            SectionHeader(viewModel.t("🧬 Duft-DNA", "🧬 Fragrance DNA"))
-            Spacer(Modifier.height(12.dp))
-            val groupedTypes = remember(perfumes) {
-                perfumes.flatMap { it.type.split(" / ") }
-                    .filter { it.isNotBlank() }
-                    .groupBy { it.trim() }
-                    .mapValues { it.value.size }
-                    .entries.sortedByDescending { it.value }
-                    .take(6)
-            }
-            GlassSurface(
-                modifier = Modifier.fillMaxWidth(),
-                alpha = 0.4f,
-                cornerRadius = 28.dp
-            ) {
-                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                    groupedTypes.forEach { (type, count) ->
-                        val fraction = remember(count, perfumes.size) { count.toFloat() / (perfumes.size.coerceAtLeast(1)) }
-                        TypeBar(label = viewModel.translateFamily(type), fraction = fraction, count = count)
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -668,6 +641,7 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
     val scope = rememberCoroutineScope()
     
     var showBulkImport by remember { mutableStateOf(false) }
+    var deleteConfirmationStep by remember { mutableIntStateOf(0) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -758,6 +732,14 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
                                         put("price", p.price)
                                         put("rating", p.rating)
                                         put("type", p.type)
+                                        put("concentration", p.concentration)
+                                        put("season", p.season)
+                                        put("occasion", p.occasion)
+                                        put("notes", p.notes)
+                                        put("isFavorite", p.isFavorite)
+                                        put("purchaseDate", p.purchaseDate)
+                                        put("addedDate", p.addedDate)
+                                        put("imageUrl", p.imageUrl)
                                         put("isWishlist", p.isWishlist)
                                     })
                                 }
@@ -770,6 +752,14 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
                             context.startActivity(android.content.Intent.createChooser(intent, "Export PerfumeVault"))
                         }
                     }
+                )
+
+                // Delete Collection
+                SettingsActionCard(
+                    label = viewModel.t("Sammlung unwiderruflich löschen", "Delete Collection permanently"),
+                    icon = Icons.Default.DeleteForever,
+                    contentColor = Color.Red.copy(alpha = 0.8f),
+                    onClick = { deleteConfirmationStep = 1 }
                 )
             }
         }
@@ -814,6 +804,53 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
             onDismiss = { showBulkImport = false }
         )
     }
+
+    // --- DELETE CONFIRMATION DIALOGS ---
+    if (deleteConfirmationStep == 1) {
+        AlertDialog(
+            onDismissRequest = { deleteConfirmationStep = 0 },
+            containerColor = adaptive.glassBase,
+            shape = RoundedCornerShape(28.dp),
+            title = { Text(viewModel.t("Sammlung löschen?", "Delete Collection?"), fontWeight = FontWeight.Bold, color = adaptive.textPrimary) },
+            text = { Text(viewModel.t("Bist du sicher? Alle Düfte und Einträge gehen verloren.", "Are you sure? All fragrances and entries will be lost."), color = adaptive.textPrimary.copy(alpha = 0.7f)) },
+            confirmButton = {
+                TextButton(onClick = { deleteConfirmationStep = 2 }) {
+                    Text(viewModel.t("Weiter", "Continue"), color = Color.Red, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteConfirmationStep = 0 }) {
+                    Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary)
+                }
+            }
+        )
+    }
+
+    if (deleteConfirmationStep == 2) {
+        AlertDialog(
+            onDismissRequest = { deleteConfirmationStep = 0 },
+            containerColor = adaptive.glassBase,
+            shape = RoundedCornerShape(28.dp),
+            title = { Text(viewModel.t("Letzte Warnung!", "Last Warning!"), fontWeight = FontWeight.Black, color = Color.Red) },
+            text = { Text(viewModel.t("Diese Aktion ist UNWIDERRUFLICH. Wirklich alles löschen?", "This action is IRREVERSIBLE. Really delete everything?"), color = adaptive.textPrimary.copy(alpha = 0.9f)) },
+            confirmButton = {
+                HighVisibilityButton(
+                    text = viewModel.t("JETZT LÖSCHEN", "DELETE NOW"),
+                    containerColor = Color.Red,
+                    contentColor = Color.White,
+                    onClick = {
+                        viewModel.clearAllData()
+                        deleteConfirmationStep = 0
+                    }
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteConfirmationStep = 0 }) {
+                    Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary)
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -856,55 +893,6 @@ fun SettingsActionCard(
                 null, 
                 tint = finalColor.copy(alpha = 0.2f),
                 modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun TypeBar(label: String, fraction: Float, count: Int) {
-    val adaptive = LocalAdaptiveColors.current
-    val animatedFraction by animateFloatAsState(
-        targetValue = fraction,
-        animationSpec = tween(1400, easing = FastOutSlowInEasing),
-        label = "typeBar"
-    )
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                label, 
-                color = adaptive.textPrimary, 
-                fontSize = 15.sp, 
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                "$count", 
-                color = adaptive.textPrimary.copy(alpha = 0.3f), 
-                fontSize = 13.sp, 
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(6.dp)
-                .clip(CircleShape)
-                .background(adaptive.textPrimary.copy(alpha = 0.05f))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(animatedFraction)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(AppleAccentBlue.copy(alpha = 0.7f), AppleAccentBlue)
-                        )
-                    )
             )
         }
     }

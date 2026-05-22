@@ -248,28 +248,6 @@ fun DetailScreen(
                         DetailRow(viewModel.t("Saison", "Season"), viewModel.translateSeason(currentPerfume.season))
                         Spacer(Modifier.height(16.dp))
                         DetailRow(viewModel.t("Anlass", "Occasion"), viewModel.translateOccasion(currentPerfume.occasion))
-                        if (currentPerfume.type.isNotEmpty()) {
-                            Spacer(Modifier.height(16.dp))
-                            DetailRow(viewModel.t("Familie", "Family"), currentPerfume.type)
-                        }
-                    }
-                }
-            }
-
-            // Notes Section
-            if (currentPerfume.notes.isNotEmpty()) {
-                item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        SectionLabel(viewModel.t("NOTIZEN", "NOTES"))
-                        Text(
-                            currentPerfume.notes,
-                            fontSize = 16.sp,
-                            color = adaptive.textPrimary.copy(alpha = 0.7f),
-                            lineHeight = 24.sp
-                        )
                     }
                 }
             }

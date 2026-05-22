@@ -2,10 +2,11 @@ package com.example.perfumevault.ui.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -25,9 +26,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.perfumevault.data.Perfume
 import com.example.perfumevault.ui.components.*
-import com.example.perfumevault.ui.theme.LocalAdaptiveColors
-import com.example.perfumevault.ui.theme.AppleAccentBlue
-import com.example.perfumevault.ui.theme.GoldAccent
+import com.example.perfumevault.ui.theme.*
 import com.example.perfumevault.viewmodel.PerfumeViewModel
 import com.example.perfumevault.viewmodel.SortMode
 
@@ -41,10 +40,12 @@ fun ShelfScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val sortMode by viewModel.sortMode.collectAsState()
     val filterFavorites by viewModel.filterFavorites.collectAsState()
+    val filterSeason by viewModel.filterSeason.collectAsState()
     val adaptive = LocalAdaptiveColors.current
     viewModel.currentLanguage.collectAsState() 
 
     var showSortMenu by remember { mutableStateOf(false) }
+    var showSeasonMenu by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -107,6 +108,7 @@ fun ShelfScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -117,8 +119,40 @@ fun ShelfScreen(
                 onClick = viewModel::toggleFavoriteFilter
             )
 
-            Spacer(Modifier.weight(1f))
+            // Saison Dropdown
+            Box {
+                SelectableChip(
+                    label = "🗓 " + viewModel.translateSeason(filterSeason),
+                    selected = filterSeason != "Alle",
+                    onClick = { showSeasonMenu = true }
+                )
+                DropdownMenu(
+                    expanded = showSeasonMenu,
+                    onDismissRequest = { showSeasonMenu = false },
+                    modifier = Modifier.background(adaptive.glassBase)
+                ) {
+                    val seasons = listOf("Alle", "Frühling", "Sommer", "Herbst", "Winter")
+                    seasons.forEach { s ->
+                        DropdownMenuItem(
+                            text = { 
+                                Text(
+                                    viewModel.translateSeason(s), 
+                                    color = adaptive.textPrimary, 
+                                    fontWeight = FontWeight.SemiBold
+                                ) 
+                            },
+                            onClick = { viewModel.setFilterSeason(s); showSeasonMenu = false },
+                            leadingIcon = {
+                                if (filterSeason == s) {
+                                    Icon(Icons.Default.Check, contentDescription = null, tint = AppleAccentBlue)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
 
+            // Sort Mode Dropdown
             Box {
                 val sortLabel = when(sortMode) {
                     SortMode.BRAND -> viewModel.t("Marke", "Brand")
@@ -176,35 +210,13 @@ fun ShelfScreen(
                     items = perfumes, 
                     key = { _, p -> p.id },
                     contentType = { _, _ -> "perfume_card" }
-                ) { index, perfume ->
-                    var isVisible by remember { mutableStateOf(false) }
-                    LaunchedEffect(Unit) { isVisible = true }
-
-                    val scale by animateFloatAsState(
-                        targetValue = if (isVisible) 1f else 0.85f,
-                        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow),
-                        label = "scale"
+                ) { _, perfume ->
+                    PerfumeCard(
+                        perfume = perfume,
+                        viewModel = viewModel,
+                        onClick = { onPerfumeClick(perfume) },
+                        onFavoriteToggle = { viewModel.toggleFavorite(perfume) }
                     )
-                    val alpha by animateFloatAsState(
-                        targetValue = if (isVisible) 1f else 0f,
-                        animationSpec = tween(400, delayMillis = (index * 30).coerceAtMost(300)),
-                        label = "alpha"
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .graphicsLayer {
-                                scaleX = scale
-                                scaleY = scale
-                                this.alpha = alpha
-                            }
-                    ) {
-                        PerfumeCard(
-                            perfume = perfume,
-                            onClick = { onPerfumeClick(perfume) },
-                            onFavoriteToggle = { viewModel.toggleFavorite(perfume) }
-                        )
-                    }
                 }
             }
         }
@@ -214,6 +226,7 @@ fun ShelfScreen(
 @Composable
 fun PerfumeCard(
     perfume: Perfume,
+    viewModel: PerfumeViewModel,
     onClick: () -> Unit,
     onFavoriteToggle: () -> Unit
 ) {
@@ -291,6 +304,19 @@ fun PerfumeCard(
                             fontWeight = FontWeight.Bold,
                             color = adaptive.textPrimary
                         )
+                        
+                        if (perfume.season.isNotEmpty() && perfume.season != "Alle") {
+                            Spacer(Modifier.width(12.dp))
+                            Text(
+                                viewModel.translateSeason(perfume.season),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = adaptive.textPrimary.copy(alpha = 0.5f),
+                                modifier = Modifier
+                                    .background(adaptive.textPrimary.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
                     }
                 }
 

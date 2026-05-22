@@ -39,10 +39,6 @@ import java.util.Date
 import java.util.Locale
 
 private val CONCENTRATIONS = listOf("EDT", "EDP", "Parfum", "Extrait")
-private val FRAGRANCE_FAMILIES = listOf(
-    "Zitrisch", "Frisch", "Grün", "Aquatisch", "Blumig", "Fruchtig", 
-    "Würzig", "Holzig", "Orientalisch", "Süß", "Rauchig", "Ledrig", "Pudrig", "Gourmand"
-)
 
 private fun createTempPictureUri(context: android.content.Context): Uri? {
     return try {
@@ -181,25 +177,6 @@ fun AddPerfumeDialog(
                 GlassTextField(value = brand, onValueChange = { brand = it }, label = viewModel.t("Marke", "Brand"))
                 GlassTextField(value = name, onValueChange = { name = it }, label = viewModel.t("Name", "Name"))
 
-                SectionLabel(viewModel.t("Duftfamilie", "Fragrance Family"))
-                val selectedFamilies = type.split(" / ").filter { it.isNotBlank() }
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(FRAGRANCE_FAMILIES) { family ->
-                        val isSelected = selectedFamilies.contains(family)
-                        SelectableChip(
-                            label = viewModel.translateFamily(family), 
-                            selected = isSelected
-                        ) {
-                            val newList = if (isSelected) {
-                                selectedFamilies.filter { it != family }
-                            } else {
-                                selectedFamilies + family
-                            }
-                            type = newList.joinToString(" / ")
-                        }
-                    }
-                }
-                
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel(viewModel.t("Bild", "Image"))
                     if (imageUrl.isNotEmpty()) {
@@ -316,34 +293,44 @@ fun AddPerfumeDialog(
                 }
 
                 SectionLabel(viewModel.t("Jahreszeit", "Season"))
+                val selectedSeasons = season.split(" / ").filter { it.isNotBlank() }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val seasons = listOf("Alle", "Frühling", "Sommer", "Herbst", "Winter")
+                    val seasons = listOf("Frühling", "Sommer", "Herbst", "Winter")
                     items(seasons) { s ->
+                        val isSelected = selectedSeasons.contains(s)
                         SelectableChip(
                             label = viewModel.translateSeason(s), 
-                            selected = season == s
-                        ) { season = s }
+                            selected = isSelected
+                        ) {
+                            val newList = if (isSelected) {
+                                selectedSeasons.filter { it != s }
+                            } else {
+                                selectedSeasons + s
+                            }
+                            season = if (newList.isEmpty()) "Alle" else newList.joinToString(" / ")
+                        }
                     }
                 }
 
                 SectionLabel(viewModel.t("Anlass", "Occasion"))
+                val selectedOccasions = occasion.split(" / ").filter { it.isNotBlank() }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val occasions = listOf("Alle", "Alltag", "Business", "Abend", "Sport", "Reise")
+                    val occasions = listOf("Alltag", "Büro", "Business", "Date", "Abend", "Ausgehen", "Sport", "Reise", "Besonderer Anlass")
                     items(occasions) { o ->
+                        val isSelected = selectedOccasions.contains(o)
                         SelectableChip(
                             label = viewModel.translateOccasion(o), 
-                            selected = occasion == o
-                        ) { occasion = o }
+                            selected = isSelected
+                        ) {
+                            val newList = if (isSelected) {
+                                selectedOccasions.filter { it != o }
+                            } else {
+                                selectedOccasions + o
+                            }
+                            occasion = if (newList.isEmpty()) "Alle" else newList.joinToString(" / ")
+                        }
                     }
                 }
-
-                GlassTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    label = viewModel.t("Notizen", "Notes"),
-                    singleLine = false,
-                    modifier = Modifier.height(100.dp)
-                )
 
                 if (!initialIsWishlist) {
                     Row(
@@ -513,25 +500,6 @@ fun EditPerfumeDialog(
                 GlassTextField(value = brand, onValueChange = { brand = it }, label = viewModel.t("Marke", "Brand"))
                 GlassTextField(value = name, onValueChange = { name = it }, label = viewModel.t("Name", "Name"))
 
-                SectionLabel(viewModel.t("Duftfamilie", "Fragrance Family"))
-                val selectedFamilies = type.split(" / ").filter { it.isNotBlank() }
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(FRAGRANCE_FAMILIES) { family ->
-                        val isSelected = selectedFamilies.contains(family)
-                        SelectableChip(
-                            label = viewModel.translateFamily(family), 
-                            selected = isSelected
-                        ) {
-                            val newList = if (isSelected) {
-                                selectedFamilies.filter { it != family }
-                            } else {
-                                selectedFamilies + family
-                            }
-                            type = newList.joinToString(" / ")
-                        }
-                    }
-                }
-                
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel(viewModel.t("Bild", "Image"))
                     if (imageUrl.isNotEmpty()) {
@@ -648,34 +616,44 @@ fun EditPerfumeDialog(
                 }
 
                 SectionLabel(viewModel.t("Jahreszeit", "Season"))
+                val selectedSeasons = season.split(" / ").filter { it.isNotBlank() }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val seasons = listOf("Alle", "Frühling", "Sommer", "Herbst", "Winter")
+                    val seasons = listOf("Frühling", "Sommer", "Herbst", "Winter")
                     items(seasons) { s ->
+                        val isSelected = selectedSeasons.contains(s)
                         SelectableChip(
                             label = viewModel.translateSeason(s), 
-                            selected = season == s
-                        ) { season = s }
+                            selected = isSelected
+                        ) {
+                            val newList = if (isSelected) {
+                                selectedSeasons.filter { it != s }
+                            } else {
+                                selectedSeasons + s
+                            }
+                            season = if (newList.isEmpty()) "Alle" else newList.joinToString(" / ")
+                        }
                     }
                 }
 
                 SectionLabel(viewModel.t("Anlass", "Occasion"))
+                val selectedOccasions = occasion.split(" / ").filter { it.isNotBlank() }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val occasions = listOf("Alle", "Alltag", "Business", "Abend", "Sport", "Reise")
+                    val occasions = listOf("Alltag", "Büro", "Business", "Date", "Abend", "Ausgehen", "Sport", "Reise", "Besonderer Anlass")
                     items(occasions) { o ->
+                        val isSelected = selectedOccasions.contains(o)
                         SelectableChip(
                             label = viewModel.translateOccasion(o), 
-                            selected = occasion == o
-                        ) { occasion = o }
+                            selected = isSelected
+                        ) {
+                            val newList = if (isSelected) {
+                                selectedOccasions.filter { it != o }
+                            } else {
+                                selectedOccasions + o
+                            }
+                            occasion = if (newList.isEmpty()) "Alle" else newList.joinToString(" / ")
+                        }
                     }
                 }
-
-                GlassTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    label = viewModel.t("Notizen", "Notes"),
-                    singleLine = false,
-                    modifier = Modifier.height(100.dp)
-                )
 
                 Row(
                     modifier = Modifier

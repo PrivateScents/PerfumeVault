@@ -35,11 +35,16 @@ class PerfumeViewModel(
     private val _selectedTab = MutableStateFlow(0)
     val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
 
-    private val _sortMode = MutableStateFlow(SortMode.BRAND)
+    private val _sortMode = MutableStateFlow(
+        runCatching { SortMode.valueOf(prefs.getString("sort_mode", "BRAND") ?: "BRAND") }.getOrDefault(SortMode.BRAND)
+    )
     val sortMode: StateFlow<SortMode> = _sortMode.asStateFlow()
 
     private val _filterFavorites = MutableStateFlow(false)
     val filterFavorites: StateFlow<Boolean> = _filterFavorites.asStateFlow()
+
+    private val _filterSeason = MutableStateFlow(prefs.getString("filter_season", "Alle") ?: "Alle")
+    val filterSeason: StateFlow<String> = _filterSeason.asStateFlow()
 
     // --- Localization Helper ---
     fun setLanguage(lang: String) {
@@ -74,36 +79,56 @@ class PerfumeViewModel(
         else -> family
     }
 
-    fun translateSeason(season: String): String = when(season.trim()) {
-        "Alle", "All" -> t("Alle", "All")
-        "Frühling", "Spring" -> t("Frühling", "Spring")
-        "Sommer", "Summer" -> t("Sommer", "Summer")
-        "Herbst", "Autumn" -> t("Herbst", "Autumn")
-        "Winter" -> t("Winter", "Winter")
-        else -> season
+    fun translateSeason(season: String): String {
+        val list = season.split(" / ").filter { it.isNotBlank() }
+        if (list.isEmpty()) return t("Alle", "All")
+        return list.joinToString(" / ") { s ->
+            when(s.trim()) {
+                "Alle", "All" -> t("Alle", "All")
+                "Frühling", "Spring" -> t("Frühling", "Spring")
+                "Sommer", "Summer" -> t("Sommer", "Summer")
+                "Herbst", "Autumn" -> t("Herbst", "Autumn")
+                "Winter" -> t("Winter", "Winter")
+                else -> s
+            }
+        }
     }
 
-    fun translateOccasion(occasion: String): String = when(occasion.trim()) {
-        "Alle", "All" -> t("Alle", "All")
-        "Alltag", "Daily" -> t("Alltag", "Daily")
-        "Business" -> t("Business", "Business")
-        "Abend", "Evening" -> t("Abend", "Evening")
-        "Sport" -> t("Sport", "Sport")
-        "Reise", "Travel" -> t("Reise", "Travel")
-        "Date" -> t("Date", "Date")
-        else -> occasion
+    fun translateOccasion(occasion: String): String {
+        val list = occasion.split(" / ").filter { it.isNotBlank() }
+        if (list.isEmpty()) return t("Alle", "All")
+        return list.joinToString(" / ") { o ->
+            when(o.trim()) {
+                "Alle", "All" -> t("Alle", "All")
+                "Alltag", "Daily" -> t("Alltag", "Daily")
+                "Büro", "Office" -> t("Büro", "Office")
+                "Business" -> t("Business", "Business")
+                "Abend", "Evening" -> t("Abend", "Evening")
+                "Ausgehen", "Going Out" -> t("Ausgehen", "Going Out")
+                "Sport" -> t("Sport", "Sport")
+                "Reise", "Travel" -> t("Reise", "Travel")
+                "Date" -> t("Date", "Date")
+                "Besonderer Anlass", "Special Occasion" -> t("Besonderer Anlass", "Special Occasion")
+                else -> o
+            }
+        }
     }
 
     // --- Daten ---
-    val allPerfumes: StateFlow<List<Perfume>> = _searchQuery
-        .flatMapLatest { query ->
-            if (query.isBlank()) repo.allPerfumes else repo.searchPerfumes(query)
+    val allPerfumes: StateFlow<List<Perfume>> = combine(
+        _searchQuery.flatMapLatest { if (it.isBlank()) repo.allPerfumes else repo.searchPerfumes(it) },
+        _sortMode,
+        _filterFavorites,
+        _filterSeason
+    ) { list, sort, favOnly, season ->
+        var filtered = if (favOnly) list.filter { it.isFavorite } else list
+        
+        if (season != "Alle") {
+            filtered = filtered.filter { it.season.contains(season) || it.season == "Alle" }
         }
-        .combine(_sortMode) { list, sort -> sort.apply(list) }
-        .combine(_filterFavorites) { list, favOnly ->
-            if (favOnly) list.filter { it.isFavorite } else list
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        
+        sort.apply(filtered)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val totalCount: StateFlow<Int> = repo.totalCount
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
@@ -125,18 +150,33 @@ class PerfumeViewModel(
     val unfilteredPerfumes: StateFlow<List<Perfume>> = repo.allPerfumes
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val wishlistPerfumes: StateFlow<List<Perfume>> = repo.wishlistPerfumes
-        .combine(_searchQuery) { list, query ->
-            if (query.isBlank()) list 
-            else list.filter { it.name.contains(query, true) || it.brand.contains(query, true) }
+    val wishlistPerfumes: StateFlow<List<Perfume>> = combine(
+        repo.wishlistPerfumes,
+        _searchQuery,
+        _filterSeason
+    ) { list, query, season ->
+        var filtered = if (query.isBlank()) list 
+        else list.filter { it.name.contains(query, true) || it.brand.contains(query, true) }
+        
+        if (season != "Alle") {
+            filtered = filtered.filter { it.season.contains(season) || it.season == "Alle" }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        filtered
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // --- Actions ---
     fun setSearchQuery(q: String) { _searchQuery.value = q }
     fun setTab(tab: Int) { _selectedTab.value = tab }
-    fun setSortMode(mode: SortMode) { _sortMode.value = mode }
+    fun setSortMode(mode: SortMode) { 
+        _sortMode.value = mode 
+        prefs.edit { putString("sort_mode", mode.name) }
+    }
     fun toggleFavoriteFilter() { _filterFavorites.value = !_filterFavorites.value }
+
+    fun setFilterSeason(season: String) {
+        _filterSeason.value = season
+        prefs.edit { putString("filter_season", season) }
+    }
 
     fun addPerfume(
         name: String, brand: String, rating: Double, type: String,
@@ -204,8 +244,15 @@ class PerfumeViewModel(
                         price = obj.optDouble("price", 0.0),
                         rating = obj.optDouble("rating", 7.0),
                         type = obj.optString("type", "Unbekannt"),
-                        isWishlist = obj.optBoolean("isWishlist", false),
-                        addedDate = LocalDate.now().toString()
+                        concentration = obj.optString("concentration", "EDP"),
+                        season = obj.optString("season", "Alle"),
+                        occasion = obj.optString("occasion", "Alle"),
+                        notes = obj.optString("notes", ""),
+                        isFavorite = obj.optBoolean("isFavorite", false),
+                        purchaseDate = obj.optString("purchaseDate", ""),
+                        addedDate = obj.optString("addedDate", LocalDate.now().toString()),
+                        imageUrl = obj.optString("imageUrl", ""),
+                        isWishlist = obj.optBoolean("isWishlist", false)
                     ))
                 }
             } catch (_: Exception) {
