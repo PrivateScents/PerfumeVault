@@ -252,6 +252,24 @@ fun DetailScreen(
                 }
             }
 
+            // Notes Section
+            if (currentPerfume.notes.isNotEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        SectionLabel(viewModel.t("NOTIZEN", "NOTES"))
+                        Text(
+                            currentPerfume.notes,
+                            fontSize = 16.sp,
+                            color = adaptive.textPrimary.copy(alpha = 0.7f),
+                            lineHeight = 24.sp
+                        )
+                    }
+                }
+            }
+
             // Timeline
             if (logs.isNotEmpty()) {
                 item {

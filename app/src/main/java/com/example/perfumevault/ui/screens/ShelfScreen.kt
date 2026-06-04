@@ -2,7 +2,6 @@ package com.example.perfumevault.ui.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -108,9 +107,7 @@ fun ShelfScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             SelectableChip(
@@ -119,79 +116,83 @@ fun ShelfScreen(
                 onClick = viewModel::toggleFavoriteFilter
             )
 
-            // Saison Dropdown
-            Box {
-                SelectableChip(
-                    label = "🗓 " + viewModel.translateSeason(filterSeason),
-                    selected = filterSeason != "Alle",
-                    onClick = { showSeasonMenu = true }
-                )
-                DropdownMenu(
-                    expanded = showSeasonMenu,
-                    onDismissRequest = { showSeasonMenu = false },
-                    modifier = Modifier.background(adaptive.glassBase)
-                ) {
-                    val seasons = listOf("Alle", "Frühling", "Sommer", "Herbst", "Winter")
-                    seasons.forEach { s ->
-                        DropdownMenuItem(
-                            text = { 
-                                Text(
-                                    viewModel.translateSeason(s), 
-                                    color = adaptive.textPrimary, 
-                                    fontWeight = FontWeight.SemiBold
-                                ) 
-                            },
-                            onClick = { viewModel.setFilterSeason(s); showSeasonMenu = false },
-                            leadingIcon = {
-                                if (filterSeason == s) {
-                                    Icon(Icons.Default.Check, contentDescription = null, tint = AppleAccentBlue)
+            Spacer(Modifier.weight(1f))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                // Saison Dropdown
+                Box {
+                    SelectableChip(
+                        label = "🗓 " + viewModel.translateSeason(filterSeason),
+                        selected = filterSeason != "Alle",
+                        onClick = { showSeasonMenu = true }
+                    )
+                    DropdownMenu(
+                        expanded = showSeasonMenu,
+                        onDismissRequest = { showSeasonMenu = false },
+                        modifier = Modifier.background(adaptive.glassBase)
+                    ) {
+                        val seasons = listOf("Alle", "Frühling", "Sommer", "Herbst", "Winter")
+                        seasons.forEach { s ->
+                            DropdownMenuItem(
+                                text = { 
+                                    Text(
+                                        viewModel.translateSeason(s), 
+                                        color = adaptive.textPrimary, 
+                                        fontWeight = FontWeight.SemiBold
+                                    ) 
+                                },
+                                onClick = { viewModel.setFilterSeason(s); showSeasonMenu = false },
+                                leadingIcon = {
+                                    if (filterSeason == s) {
+                                        Icon(Icons.Default.Check, contentDescription = null, tint = AppleAccentBlue)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
-            }
 
-            // Sort Mode Dropdown
-            Box {
-                val sortLabel = when(sortMode) {
-                    SortMode.BRAND -> viewModel.t("Marke", "Brand")
-                    SortMode.RATING -> viewModel.t("Bewertung", "Rating")
-                    SortMode.NAME -> viewModel.t("Name", "Name")
-                    SortMode.RECENT -> viewModel.t("Neueste", "Recent")
-                }
-                SelectableChip(
-                    label = "↕ $sortLabel",
-                    selected = false,
-                    onClick = { showSortMenu = true }
-                )
-                DropdownMenu(
-                    expanded = showSortMenu,
-                    onDismissRequest = { showSortMenu = false },
-                    modifier = Modifier.background(adaptive.glassBase)
-                ) {
-                    SortMode.entries.forEach { mode ->
-                        val itemLabel = when(mode) {
-                            SortMode.BRAND -> viewModel.t("Marke", "Brand")
-                            SortMode.RATING -> viewModel.t("Bewertung", "Rating")
-                            SortMode.NAME -> viewModel.t("Name", "Name")
-                            SortMode.RECENT -> viewModel.t("Neueste", "Recent")
-                        }
-                        DropdownMenuItem(
-                            text = { 
-                                Text(
-                                    itemLabel, 
-                                    color = adaptive.textPrimary, 
-                                    fontWeight = FontWeight.SemiBold
-                                ) 
-                            },
-                            onClick = { viewModel.setSortMode(mode); showSortMenu = false },
-                            leadingIcon = {
-                                if (sortMode == mode) {
-                                    Icon(Icons.Default.Check, contentDescription = null, tint = AppleAccentBlue)
-                                }
+                // Sort Mode Dropdown
+                Box {
+                    val sortLabel = when(sortMode) {
+                        SortMode.BRAND -> viewModel.t("Marke", "Brand")
+                        SortMode.RATING -> viewModel.t("Bewertung", "Rating")
+                        SortMode.NAME -> viewModel.t("Name", "Name")
+                        SortMode.RECENT -> viewModel.t("Neueste", "Recent")
+                    }
+                    SelectableChip(
+                        label = "↕ $sortLabel",
+                        selected = false,
+                        onClick = { showSortMenu = true }
+                    )
+                    DropdownMenu(
+                        expanded = showSortMenu,
+                        onDismissRequest = { showSortMenu = false },
+                        modifier = Modifier.background(adaptive.glassBase)
+                    ) {
+                        SortMode.entries.forEach { mode ->
+                            val itemLabel = when(mode) {
+                                SortMode.BRAND -> viewModel.t("Marke", "Brand")
+                                SortMode.RATING -> viewModel.t("Bewertung", "Rating")
+                                SortMode.NAME -> viewModel.t("Name", "Name")
+                                SortMode.RECENT -> viewModel.t("Neueste", "Recent")
                             }
-                        )
+                            DropdownMenuItem(
+                                text = { 
+                                    Text(
+                                        itemLabel, 
+                                        color = adaptive.textPrimary, 
+                                        fontWeight = FontWeight.SemiBold
+                                    ) 
+                                },
+                                onClick = { viewModel.setSortMode(mode); showSortMenu = false },
+                                leadingIcon = {
+                                    if (sortMode == mode) {
+                                        Icon(Icons.Default.Check, contentDescription = null, tint = AppleAccentBlue)
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -246,7 +247,7 @@ fun PerfumeCard(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Image Frame
                 Box(
@@ -309,14 +310,27 @@ fun PerfumeCard(
                             Spacer(Modifier.width(12.dp))
                             Text(
                                 viewModel.translateSeason(perfume.season),
-                                fontSize = 10.sp,
+                                fontSize = 9.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = adaptive.textPrimary.copy(alpha = 0.5f),
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                 modifier = Modifier
                                     .background(adaptive.textPrimary.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .padding(horizontal = 4.dp, vertical = 2.dp)
                             )
                         }
+                    }
+
+                    if (perfume.notes.isNotEmpty()) {
+                        Text(
+                            text = perfume.notes,
+                            fontSize = 10.sp,
+                            color = adaptive.textPrimary.copy(alpha = 0.3f),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
                     }
                 }
 

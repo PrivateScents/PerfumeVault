@@ -61,24 +61,6 @@ class PerfumeViewModel(
         return if (_currentLanguage.value == "de") de else en
     }
 
-    fun translateFamily(family: String): String = when(family.trim()) {
-        "Zitrisch", "Citrus" -> t("Zitrisch", "Citrus")
-        "Frisch", "Fresh" -> t("Frisch", "Fresh")
-        "Grün", "Green" -> t("Grün", "Green")
-        "Aquatisch", "Aquatic" -> t("Aquatisch", "Aquatic")
-        "Blumig", "Floral" -> t("Blumig", "Floral")
-        "Fruchtig", "Fruit" -> t("Fruchtig", "Fruit")
-        "Würzig", "Spicy" -> t("Würzig", "Spicy")
-        "Holzig", "Woody" -> t("Holzig", "Woody")
-        "Orientalisch", "Oriental" -> t("Orientalisch", "Oriental")
-        "Süß", "Sweet" -> t("Süß", "Sweet")
-        "Rauchig", "Smoky" -> t("Rauchig", "Smoky")
-        "Ledrig", "Leathery" -> t("Ledrig", "Leathery")
-        "Pudrig", "Powdery" -> t("Pudrig", "Powdery")
-        "Gourmand" -> t("Gourmand", "Gourmand")
-        else -> family
-    }
-
     fun translateSeason(season: String): String {
         val list = season.split(" / ").filter { it.isNotBlank() }
         if (list.isEmpty()) return t("Alle", "All")
@@ -122,11 +104,9 @@ class PerfumeViewModel(
         _filterSeason
     ) { list, sort, favOnly, season ->
         var filtered = if (favOnly) list.filter { it.isFavorite } else list
-        
         if (season != "Alle") {
             filtered = filtered.filter { it.season.contains(season) || it.season == "Alle" }
         }
-        
         sort.apply(filtered)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -157,7 +137,6 @@ class PerfumeViewModel(
     ) { list, query, season ->
         var filtered = if (query.isBlank()) list 
         else list.filter { it.name.contains(query, true) || it.brand.contains(query, true) }
-        
         if (season != "Alle") {
             filtered = filtered.filter { it.season.contains(season) || it.season == "Alle" }
         }
@@ -230,8 +209,6 @@ class PerfumeViewModel(
     fun addPerfumesFromText(text: String) {
         viewModelScope.launch {
             val perfumes = mutableListOf<Perfume>()
-            
-            // Versuch 1: JSON
             try {
                 val jsonArray = JSONArray(text)
                 for (i in 0 until jsonArray.length()) {
@@ -256,8 +233,6 @@ class PerfumeViewModel(
                     ))
                 }
             } catch (_: Exception) {
-                // Falls JSON fehlschlägt, versuche CSV/TXT
-                // Versuch 2: CSV/TXT (Marke; Name; Größe; Füllstand; Preis)
                 text.lines().forEach { line ->
                     val parts = line.split(";")
                     if (parts.size >= 2) {
@@ -274,7 +249,6 @@ class PerfumeViewModel(
                     }
                 }
             }
-
             if (perfumes.isNotEmpty()) repo.addPerfumes(perfumes)
         }
     }
@@ -284,9 +258,7 @@ class PerfumeViewModel(
             repo.getPerfumeById(perfumeId).firstOrNull()?.let { perfume ->
                 val reduction = sprays.toDouble() / 15.0
                 val newRemaining = (perfume.remainingMl - reduction).coerceIn(0.0, perfume.bottleSize.toDouble())
-                // Round to 4 decimal places to prevent floating point drift
                 val roundedRemaining = round(newRemaining * 10000.0) / 10000.0
-                
                 repo.addLog(UsageLog(
                     perfumeId = perfumeId,
                     date = LocalDate.now().toString(),
@@ -295,7 +267,6 @@ class PerfumeViewModel(
                     note = note,
                     sprays = sprays
                 ))
-
                 repo.updateRemainingMl(perfumeId, roundedRemaining)
             }
         }
@@ -332,7 +303,6 @@ class PerfumeViewModel(
 
 enum class SortMode {
     BRAND, RATING, NAME, RECENT;
-
     fun apply(list: List<Perfume>): List<Perfume> = when (this) {
         BRAND -> list.sortedWith(compareBy({ it.brand }, { it.name }))
         RATING -> list.sortedByDescending { it.rating }

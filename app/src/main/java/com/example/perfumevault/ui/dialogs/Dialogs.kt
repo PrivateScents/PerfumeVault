@@ -38,8 +38,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val CONCENTRATIONS = listOf("EDT", "EDP", "Parfum", "Extrait")
-
 private fun createTempPictureUri(context: android.content.Context): Uri? {
     return try {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
@@ -89,14 +87,12 @@ fun AddPerfumeDialog(
     var name by remember { mutableStateOf("") }
     var brand by remember { mutableStateOf("") }
     var ratingStr by remember { mutableStateOf("") }
-    var type by remember { mutableStateOf("") }
     var concentration by remember { mutableStateOf("EDP") }
     var season by remember { mutableStateOf("Alle") }
     var occasion by remember { mutableStateOf("Alle") }
     var bottleSizeStr by remember { mutableStateOf("100") }
     var remainingMlStr by remember { mutableStateOf("100") }
     var priceStr by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
     var imageUrl by remember { mutableStateOf("") }
     var isWishlist by remember { mutableStateOf(initialIsWishlist) }
 
@@ -287,7 +283,8 @@ fun AddPerfumeDialog(
 
                 SectionLabel(viewModel.t("Konzentration", "Concentration"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(CONCENTRATIONS) { c ->
+                    val concentrations = listOf("EDT", "EDP", "Parfum", "Extrait")
+                    items(concentrations) { c ->
                         SelectableChip(c, selected = concentration == c) { concentration = c }
                     }
                 }
@@ -381,8 +378,8 @@ fun AddPerfumeDialog(
                         )
                     } else {
                         onSave(
-                            name, brand, rRating, type, concentration, season, occasion,
-                            bSize, rMl, rPrice, notes, imageUrl, isWishlist
+                            name, brand, rRating, "", concentration, season, occasion,
+                            bSize, rMl, rPrice, "", imageUrl, isWishlist
                         )
                     }
                 },
@@ -412,14 +409,12 @@ fun EditPerfumeDialog(
     var name by remember { mutableStateOf(perfume.name) }
     var brand by remember { mutableStateOf(perfume.brand) }
     var ratingStr by remember { mutableStateOf(perfume.rating.toString()) }
-    var type by remember { mutableStateOf(perfume.type) }
     var concentration by remember { mutableStateOf(perfume.concentration) }
     var season by remember { mutableStateOf(perfume.season) }
     var occasion by remember { mutableStateOf(perfume.occasion) }
     var bottleSizeStr by remember { mutableStateOf(perfume.bottleSize.toString()) }
     var remainingMlStr by remember { mutableStateOf("%.2f".format(perfume.remainingMl)) }
     var priceStr by remember { mutableStateOf("%.2f".format(perfume.price)) }
-    var notes by remember { mutableStateOf(perfume.notes) }
     var imageUrl by remember { mutableStateOf(perfume.imageUrl) }
     var isWishlist by remember { mutableStateOf(perfume.isWishlist) }
 
@@ -610,7 +605,8 @@ fun EditPerfumeDialog(
 
                 SectionLabel(viewModel.t("Konzentration", "Concentration"))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(CONCENTRATIONS) { c ->
+                    val concentrations = listOf("EDT", "EDP", "Parfum", "Extrait")
+                    items(concentrations) { c ->
                         SelectableChip(c, selected = concentration == c) { concentration = c }
                     }
                 }
@@ -704,14 +700,14 @@ fun EditPerfumeDialog(
                                 name = name,
                                 brand = brand,
                                 rating = ratingStr.replace(",", ".").toDoubleOrNull()?.coerceIn(1.0, 10.0) ?: perfume.rating,
-                                type = type,
+                                type = "",
                                 concentration = concentration,
                                 season = season,
                                 occasion = occasion,
                                 bottleSize = bSize,
                                 remainingMl = rMl ?: perfume.remainingMl,
                                 price = priceStr.replace(",", ".").toDoubleOrNull() ?: perfume.price,
-                                notes = notes,
+                                notes = "",
                                 imageUrl = imageUrl,
                                 isWishlist = isWishlist
                             )

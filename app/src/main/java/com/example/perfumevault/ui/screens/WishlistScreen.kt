@@ -194,7 +194,7 @@ fun WishlistCard(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Image Frame
                 Box(
@@ -239,12 +239,14 @@ fun WishlistCard(
                         Spacer(Modifier.height(4.dp))
                         Text(
                             viewModel.translateSeason(perfume.season),
-                            fontSize = 10.sp,
+                            fontSize = 9.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = adaptive.textPrimary.copy(alpha = 0.5f),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .background(adaptive.textPrimary.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
                         )
                     }
                     

@@ -91,29 +91,18 @@ fun DiaryScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
                 item(key = "header_$date") {
                     DateHeader(date, viewModel)
                 }
-                itemsIndexed(dayLogs, key = { _, it -> it.id }) { index, log ->
+                itemsIndexed(dayLogs, key = { _, it -> it.id }) { _, log ->
                     val perfume = perfumeMap[log.perfumeId]
                     if (perfume != null) {
-                        var isEntryVisible by remember { mutableStateOf(false) }
-                        LaunchedEffect(Unit) { isEntryVisible = true }
-                        
-                        val alpha by animateFloatAsState(
-                            targetValue = if (isEntryVisible) 1f else 0f,
-                            animationSpec = tween(600, delayMillis = (index * 20).coerceAtMost(200)),
-                            label = "diaryAlpha"
+                        LogCard(
+                            log = log,
+                            perfume = perfume,
+                            viewModel = viewModel,
+                            volAfter = historicalVolumes[log.id] ?: perfume.remainingMl,
+                            onDelete = { viewModel.deleteLog(log) },
+                            onPerfumeClick = { onPerfumeClick(perfume.id) },
+                            onEditClick = { editingLog = log }
                         )
-                        
-                        Box(Modifier.graphicsLayer { this.alpha = alpha }) {
-                            LogCard(
-                                log = log,
-                                perfume = perfume,
-                                viewModel = viewModel,
-                                volAfter = historicalVolumes[log.id] ?: perfume.remainingMl,
-                                onDelete = { viewModel.deleteLog(log) },
-                                onPerfumeClick = { onPerfumeClick(perfume.id) },
-                                onEditClick = { editingLog = log }
-                            )
-                        }
                     }
                 }
                 item(key = "spacer_$date") {
@@ -484,17 +473,8 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
             Spacer(Modifier.height(12.dp))
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 top5.forEachIndexed { index, perfume ->
-                    var isCardVisible by remember { mutableStateOf(false) }
-                    LaunchedEffect(Unit) { isCardVisible = true }
-                    
-                    val alpha by animateFloatAsState(
-                        targetValue = if (isCardVisible) 1f else 0f,
-                        animationSpec = tween(600, delayMillis = index * 80),
-                        label = "top5Alpha"
-                    )
-
                     PressableGlassCard(
-                        modifier = Modifier.fillMaxWidth().graphicsLayer { this.alpha = alpha },
+                        modifier = Modifier.fillMaxWidth(),
                         onClick = { onPerfumeClick(perfume.id) }
                     ) {
                         Row(
