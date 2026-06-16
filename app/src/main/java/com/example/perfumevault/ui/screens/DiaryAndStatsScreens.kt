@@ -1,4 +1,4 @@
-package com.example.perfumevault.ui.screens
+package com.perfumevault.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -21,11 +21,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.perfumevault.data.UsageLog
-import com.example.perfumevault.data.Perfume
-import com.example.perfumevault.ui.components.*
-import com.example.perfumevault.ui.theme.*
-import com.example.perfumevault.viewmodel.PerfumeViewModel
+import com.perfumevault.data.UsageLog
+import com.perfumevault.data.Perfume
+import com.perfumevault.ui.components.*
+import com.perfumevault.ui.theme.*
+import com.perfumevault.viewmodel.PerfumeViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -115,7 +115,7 @@ fun DiaryScreen(viewModel: PerfumeViewModel, onPerfumeClick: (Int) -> Unit) {
     if (editingLog != null) {
         val currentEditingLog = editingLog!!
         val perfume = perfumeMap[currentEditingLog.perfumeId]
-        com.example.perfumevault.ui.dialogs.EditLogDialog(
+        com.perfumevault.ui.dialogs.EditLogDialog(
             log = currentEditingLog,
             currentPerfumeVolume = perfume?.remainingMl ?: 0.0,
             viewModel = viewModel,
@@ -779,7 +779,7 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
     }
 
     if (showBulkImport) {
-        com.example.perfumevault.ui.dialogs.BulkAddDialog(
+        com.perfumevault.ui.dialogs.BulkAddDialog(
             viewModel = viewModel,
             onDismiss = { showBulkImport = false }
         )

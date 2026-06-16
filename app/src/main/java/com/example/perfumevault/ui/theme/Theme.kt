@@ -1,4 +1,4 @@
-package com.example.perfumevault.ui.theme
+package com.perfumevault.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme

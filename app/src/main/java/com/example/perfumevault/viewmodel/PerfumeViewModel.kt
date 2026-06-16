@@ -1,12 +1,12 @@
-package com.example.perfumevault.viewmodel
+package com.perfumevault.viewmodel
 
 import android.app.Application
 import android.content.Context
 import androidx.core.content.edit
 import androidx.lifecycle.*
-import com.example.perfumevault.data.Perfume
-import com.example.perfumevault.data.UsageLog
-import com.example.perfumevault.repository.PerfumeRepository
+import com.perfumevault.data.Perfume
+import com.perfumevault.data.UsageLog
+import com.perfumevault.repository.PerfumeRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

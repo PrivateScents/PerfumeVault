@@ -1,4 +1,4 @@
-package com.example.perfumevault.ui.dialogs
+package com.perfumevault.ui.dialogs
 
 import android.net.Uri
 import android.os.Environment
@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
-import com.example.perfumevault.ui.components.*
-import com.example.perfumevault.ui.theme.*
+import com.perfumevault.ui.components.*
+import com.perfumevault.ui.theme.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -46,7 +46,7 @@ private fun createTempPictureUri(context: android.content.Context): Uri? {
         val file = File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
         FileProvider.getUriForFile(
             context,
-            "com.example.perfumevault.fileprovider",
+            "com.perfumevault.fileprovider",
             file
         )
     } catch (e: Exception) {
@@ -74,7 +74,7 @@ private fun saveImageLocally(context: android.content.Context, uri: Uri): String
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPerfumeDialog(
-    viewModel: com.example.perfumevault.viewmodel.PerfumeViewModel,
+    viewModel: com.perfumevault.viewmodel.PerfumeViewModel,
     onDismiss: () -> Unit,
     onSave: (name: String, brand: String, rating: Double, type: String,
              concentration: String, season: String, occasion: String,
@@ -399,10 +399,10 @@ fun AddPerfumeDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditPerfumeDialog(
-    perfume: com.example.perfumevault.data.Perfume,
-    viewModel: com.example.perfumevault.viewmodel.PerfumeViewModel,
+    perfume: com.perfumevault.data.Perfume,
+    viewModel: com.perfumevault.viewmodel.PerfumeViewModel,
     onDismiss: () -> Unit,
-    onSave: (com.example.perfumevault.data.Perfume) -> Unit
+    onSave: (com.perfumevault.data.Perfume) -> Unit
 ) {
     viewModel.currentLanguage.collectAsState() 
 
@@ -731,7 +731,7 @@ fun EditPerfumeDialog(
 fun AddLogDialog(
     perfumeName: String,
     currentRemainingMl: Double,
-    viewModel: com.example.perfumevault.viewmodel.PerfumeViewModel,
+    viewModel: com.perfumevault.viewmodel.PerfumeViewModel,
     onDismiss: () -> Unit,
     onSave: (occasion: String, weather: String, note: String, sprays: Int) -> Unit
 ) {
@@ -875,7 +875,7 @@ fun AddLogDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BulkAddDialog(
-    viewModel: com.example.perfumevault.viewmodel.PerfumeViewModel,
+    viewModel: com.perfumevault.viewmodel.PerfumeViewModel,
     onDismiss: () -> Unit
 ) {
     var text by remember { mutableStateOf("") }
@@ -972,11 +972,11 @@ fun BulkAddDialog(
 
 @Composable
 fun EditLogDialog(
-    log: com.example.perfumevault.data.UsageLog,
+    log: com.perfumevault.data.UsageLog,
     currentPerfumeVolume: Double,
-    viewModel: com.example.perfumevault.viewmodel.PerfumeViewModel,
+    viewModel: com.perfumevault.viewmodel.PerfumeViewModel,
     onDismiss: () -> Unit,
-    onSave: (com.example.perfumevault.data.UsageLog) -> Unit
+    onSave: (com.perfumevault.data.UsageLog) -> Unit
 ) {
     // Calculate how many sprays are available total (current + what was already used in this log)
     val totalAvailableVolume = currentPerfumeVolume + (log.sprays.toDouble() / 15.0)

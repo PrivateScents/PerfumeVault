@@ -1,6 +1,6 @@
-package com.example.perfumevault.repository
+package com.perfumevault.repository
 
-import com.example.perfumevault.data.*
+import com.perfumevault.data.*
 import kotlinx.coroutines.flow.Flow
 
 class PerfumeRepository(

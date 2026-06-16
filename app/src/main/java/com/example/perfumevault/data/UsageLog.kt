@@ -1,4 +1,4 @@
-package com.example.perfumevault.data
+package com.perfumevault.data
 
 import androidx.room.Entity
 import androidx.room.ForeignKey

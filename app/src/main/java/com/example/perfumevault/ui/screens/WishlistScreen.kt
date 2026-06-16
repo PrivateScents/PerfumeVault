@@ -1,4 +1,4 @@
-package com.example.perfumevault.ui.screens
+package com.perfumevault.ui.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
@@ -34,10 +34,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.perfumevault.data.Perfume
-import com.example.perfumevault.ui.components.*
-import com.example.perfumevault.ui.theme.*
-import com.example.perfumevault.viewmodel.PerfumeViewModel
+import com.perfumevault.data.Perfume
+import com.perfumevault.ui.components.*
+import com.perfumevault.ui.theme.*
+import com.perfumevault.viewmodel.PerfumeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt

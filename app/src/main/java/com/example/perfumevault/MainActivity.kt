@@ -1,4 +1,4 @@
-package com.example.perfumevault
+package com.perfumevault
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -27,14 +27,14 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.perfumevault.data.PerfumeDatabase
-import com.example.perfumevault.repository.PerfumeRepository
-import com.example.perfumevault.ui.components.*
-import com.example.perfumevault.ui.dialogs.AddPerfumeDialog
-import com.example.perfumevault.ui.screens.*
-import com.example.perfumevault.ui.theme.*
-import com.example.perfumevault.viewmodel.PerfumeViewModel
-import com.example.perfumevault.viewmodel.PerfumeViewModelFactory
+import com.perfumevault.data.PerfumeDatabase
+import com.perfumevault.repository.PerfumeRepository
+import com.perfumevault.ui.components.*
+import com.perfumevault.ui.dialogs.AddPerfumeDialog
+import com.perfumevault.ui.screens.*
+import com.perfumevault.ui.theme.*
+import com.perfumevault.viewmodel.PerfumeViewModel
+import com.perfumevault.viewmodel.PerfumeViewModelFactory
 
 class MainActivity : ComponentActivity() {
 

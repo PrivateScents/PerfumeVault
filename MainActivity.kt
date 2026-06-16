@@ -1,4 +1,4 @@
-package com.example.perfumevault
+package com.perfumevault
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,14 +22,14 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.perfumevault.data.PerfumeDatabase
-import com.example.perfumevault.repository.PerfumeRepository
-import com.example.perfumevault.ui.components.AppleTextBlack
-import com.example.perfumevault.ui.components.AppleTextSecondary
-import com.example.perfumevault.ui.dialogs.AddPerfumeDialog
-import com.example.perfumevault.ui.screens.*
-import com.example.perfumevault.viewmodel.PerfumeViewModel
-import com.example.perfumevault.viewmodel.PerfumeViewModelFactory
+import com.perfumevault.data.PerfumeDatabase
+import com.perfumevault.repository.PerfumeRepository
+import com.perfumevault.ui.components.AppleTextBlack
+import com.perfumevault.ui.components.AppleTextSecondary
+import com.perfumevault.ui.dialogs.AddPerfumeDialog
+import com.perfumevault.ui.screens.*
+import com.perfumevault.viewmodel.PerfumeViewModel
+import com.perfumevault.viewmodel.PerfumeViewModelFactory
 
 class MainActivity : ComponentActivity() {
 
@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val isDarkMode by viewModel.isDarkMode.collectAsState()
-            com.example.perfumevault.ui.theme.PerfumeVaultTheme(darkTheme = isDarkMode) {
+            com.perfumevault.ui.theme.PerfumeVaultTheme(darkTheme = isDarkMode) {
                 PerfumeVaultApp(viewModel)
             }
         }

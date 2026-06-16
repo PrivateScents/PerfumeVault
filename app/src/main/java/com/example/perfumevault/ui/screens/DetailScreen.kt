@@ -1,4 +1,4 @@
-package com.example.perfumevault.ui.screens
+package com.perfumevault.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -22,12 +22,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.perfumevault.data.Perfume
-import com.example.perfumevault.ui.components.*
-import com.example.perfumevault.ui.dialogs.AddLogDialog
-import com.example.perfumevault.ui.theme.LocalAdaptiveColors
-import com.example.perfumevault.ui.theme.GoldAccent
-import com.example.perfumevault.viewmodel.PerfumeViewModel
+import com.perfumevault.data.Perfume
+import com.perfumevault.ui.components.*
+import com.perfumevault.ui.dialogs.AddLogDialog
+import com.perfumevault.ui.theme.LocalAdaptiveColors
+import com.perfumevault.ui.theme.GoldAccent
+import com.perfumevault.viewmodel.PerfumeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -321,7 +321,7 @@ fun DetailScreen(
     }
 
     if (showEditDialog) {
-        com.example.perfumevault.ui.dialogs.EditPerfumeDialog(
+        com.perfumevault.ui.dialogs.EditPerfumeDialog(
             perfume = currentPerfume,
             viewModel = viewModel,
             onDismiss = { showEditDialog = false },
@@ -356,7 +356,7 @@ fun InfoTile(modifier: Modifier, label: String, value: String) {
 }
 
 @Composable
-fun TimelineItem(log: com.example.perfumevault.data.UsageLog) {
+fun TimelineItem(log: com.perfumevault.data.UsageLog) {
     val adaptive = LocalAdaptiveColors.current
     GlassCard {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

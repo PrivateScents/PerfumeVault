@@ -1,4 +1,4 @@
-package com.example.perfumevault.ui.screens
+package com.perfumevault.ui.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -23,11 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.perfumevault.data.Perfume
-import com.example.perfumevault.ui.components.*
-import com.example.perfumevault.ui.theme.*
-import com.example.perfumevault.viewmodel.PerfumeViewModel
-import com.example.perfumevault.viewmodel.SortMode
+import com.perfumevault.data.Perfume
+import com.perfumevault.ui.components.*
+import com.perfumevault.ui.theme.*
+import com.perfumevault.viewmodel.PerfumeViewModel
+import com.perfumevault.viewmodel.SortMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

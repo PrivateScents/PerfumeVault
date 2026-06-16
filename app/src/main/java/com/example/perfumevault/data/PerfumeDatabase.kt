@@ -1,4 +1,4 @@
-package com.example.perfumevault.data
+package com.perfumevault.data
 
 import android.content.Context
 import androidx.room.Database
