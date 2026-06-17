@@ -5,7 +5,7 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Sophisticated Dark Slate/Anthracite Background -->
+    <!-- Your Original Sophisticated Background -->
     <path android:pathData="M0,0h108v108h-108z">
         <aapt:attr name="android:fillColor">
             <gradient
@@ -14,13 +14,13 @@
                 android:startX="0"
                 android:startY="0"
                 android:type="linear">
-                <item android:offset="0" android:color="#2C3E50"/> <!-- Deep Slate -->
-                <item android:offset="1" android:color="#1A1A1B"/> <!-- Matte Black -->
+                <item android:offset="0" android:color="#2C3E50"/>
+                <item android:offset="1" android:color="#1A1A1B"/>
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- Subtle Frosted Glass Shine (Diagonal) -->
+    <!-- Original Frosted Shine -->
     <path
         android:pathData="M0,0 L108,108"
         android:strokeWidth="40"
