@@ -6,19 +6,35 @@ plugins {
 
 android {
     namespace = "com.perfumevault"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.perfumevault"
-        minSdk = 26
-        targetSdk = 36
-        versionCode = 3
-        versionName = "1.2"
+        minSdk = 24
+        targetSdk = 35
+        versionCode = 11
+        versionName = "9.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    flavorDimensions += "version"
+    productFlavors {
+        create("public") { // Umbenannt von "free" zu "public"
+            dimension = "version"
+            applicationId = "com.perfumevault"
+            manifestPlaceholders["showAds"] = "true"
+        }
+        create("private") {
+            dimension = "version"
+            applicationIdSuffix = ".private"
+            manifestPlaceholders["showAds"] = "false"
+        }
     }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("debug")
+
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -32,12 +48,13 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -52,17 +69,21 @@ dependencies {
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.animation:animation-graphics")
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.fragment)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
-    implementation("androidx.navigation:navigation-compose:2.9.8")
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.coil.compose)
+    implementation(libs.play.services.ads)
+    implementation("com.android.billingclient:billing-ktx:7.1.1")
 
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation(libs.androidx.compose.ui.tooling)
 }
