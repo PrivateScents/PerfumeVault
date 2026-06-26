@@ -197,7 +197,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                     colors = if (isDarkMode) {
                         listOf(Color(0xFF3D4466).copy(alpha = 0.5f), Color.Transparent)
                     } else {
-                        listOf(Color(0xFF749BC2).copy(alpha = 0.12f), Color.Transparent)
+                        listOf(Color(0xFF6C7A89).copy(alpha = 0.15f), Color.Transparent)
                     },
                     center = Offset(cx * 0.1f, cy * 0.8f),
                     radius = cx * 1.2f
@@ -211,7 +211,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                     colors = if (isDarkMode) {
                         listOf(Color(0xFF8B93C7).copy(alpha = 0.4f), Color.Transparent)
                     } else {
-                        listOf(Color(0xFFF1C27B).copy(alpha = 0.12f), Color.Transparent)
+                        listOf(Color(0xFF748CAB).copy(alpha = 0.12f), Color.Transparent)
                     },
                     center = Offset(cx * 0.9f, cy * 0.1f),
                     radius = cx * 0.8f
@@ -412,7 +412,7 @@ fun PerfumeVaultApp(viewModel: PerfumeViewModel) {
                                         val iconTint = if (isDarkMode) {
                                             lerp(Color.White.copy(alpha = 0.35f), Color.White, animationProgress)
                                         } else {
-                                            lerp(AppleTextBlack.copy(alpha = 0.35f), AppleAccentBlue, animationProgress)
+                                            lerp(InkBlack.copy(alpha = 0.35f), AppleAccentBluePrimary, animationProgress)
                                         }
 
                                         Box(

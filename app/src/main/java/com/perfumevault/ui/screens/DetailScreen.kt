@@ -30,7 +30,7 @@ import com.perfumevault.ui.components.*
 import com.perfumevault.ui.dialogs.AddLogDialog
 import com.perfumevault.ui.theme.LocalAdaptiveColors
 import com.perfumevault.ui.theme.GoldAccent
-import com.perfumevault.ui.theme.AppleAccentBlue
+import com.perfumevault.ui.theme.BlueSlate
 import com.perfumevault.viewmodel.PerfumeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -147,7 +147,7 @@ fun DetailScreen(
                                         .background(Color.Black.copy(alpha = 0.2f), CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.Science, null, tint = AppleAccentBlue, modifier = Modifier.size(18.dp))
+                                    Icon(Icons.Default.Science, null, tint = BlueSlate, modifier = Modifier.size(18.dp))
                                 }
                             }
                             if (currentPerfume.isFavorite) {

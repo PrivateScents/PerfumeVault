@@ -9,9 +9,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme = darkColorScheme(
-    primary = AppleAccentBlue,
+    primary = BlueSlate,
     onPrimary = Color.White,
-    secondary = DarkTextSecondary,
+    secondary = DustyDenim,
     background = DarkBackground,
     surface = DarkSurface,
     onBackground = DarkText,
@@ -20,13 +20,13 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = AppleAccentBlue,
+    primary = LightModePrimary,
     onPrimary = Color.White,
-    secondary = AppleTextSecondary,
-    background = SoftWhiteBackground,
-    surface = SoftSurface,
-    onBackground = AppleTextBlack,
-    onSurface = AppleTextBlack,
+    secondary = LightModeSecondary,
+    background = LightModeBackground,
+    surface = LightModeSurface,
+    onBackground = LightModeTextPrimary,
+    onSurface = LightModeTextPrimary,
     error = ErrorRed
 )
 
@@ -41,11 +41,11 @@ data class AdaptiveColors(
 
 val LocalAdaptiveColors = staticCompositionLocalOf {
     AdaptiveColors(
-        textPrimary = AppleTextBlack,
-        textSecondary = AppleTextSecondary,
-        glassBase = SoftSurface,
-        glassBorder = GlassBorderLight,
-        background = SoftWhiteBackground,
+        textPrimary = LightModeTextPrimary,
+        textSecondary = LightModeTextSecondary,
+        glassBase = Color.White.copy(alpha = 0.5f),
+        glassBorder = Color(0x1A8C7851),
+        background = LightModeBackground,
         isDark = false
     )
 }
@@ -59,18 +59,18 @@ fun PerfumeVaultTheme(
         AdaptiveColors(
             textPrimary = DarkText,
             textSecondary = DarkTextSecondary,
-            glassBase = Color(0xFF1E1E1E),
-            glassBorder = Color(0x33FFFFFF),
+            glassBase = DeepSpaceBlue.copy(alpha = 0.6f),
+            glassBorder = Color(0x33F2F5F9),
             background = DarkBackground,
             isDark = true
         )
     } else {
         AdaptiveColors(
-            textPrimary = AppleTextBlack,
-            textSecondary = AppleTextSecondary,
-            glassBase = SoftSurface,
-            glassBorder = GlassBorderLight,
-            background = SoftWhiteBackground,
+            textPrimary = LightModeTextPrimary,
+            textSecondary = LightModeTextSecondary,
+            glassBase = Color.White.copy(alpha = 0.3f), // Muted glass look
+            glassBorder = Color(0x1A3D4A5C),
+            background = LightModeBackground,
             isDark = false
         )
     }
@@ -80,7 +80,6 @@ fun PerfumeVaultTheme(
     CompositionLocalProvider(LocalAdaptiveColors provides colors) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = Typography,
             content = content
         )
     }

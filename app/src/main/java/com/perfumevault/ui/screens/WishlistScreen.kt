@@ -257,7 +257,7 @@ fun WishlistCard(
                                 fontWeight = FontWeight.Black,
                                 color = Color.White,
                                 modifier = Modifier
-                                    .background(AppleAccentBlue, RoundedCornerShape(4.dp))
+                                    .background(BlueSlate, RoundedCornerShape(4.dp))
                                     .padding(horizontal = 4.dp, vertical = 1.dp)
                             )
                         }

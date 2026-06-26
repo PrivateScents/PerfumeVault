@@ -521,7 +521,7 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (String) -> Unit) {
                                                 fontWeight = FontWeight.Black,
                                                 color = Color.White,
                                                 modifier = Modifier
-                                                    .background(AppleAccentBlue, RoundedCornerShape(3.dp))
+                                                    .background(BlueSlate, RoundedCornerShape(3.dp))
                                                     .padding(horizontal = 4.dp, vertical = 1.dp)
                                             )
                                         }
