@@ -12,7 +12,7 @@ android {
         applicationId = "com.perfumevault"
         minSdk = 24
         targetSdk = 35
-        versionCode = 14
+        versionCode = 16
         versionName = "9.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
