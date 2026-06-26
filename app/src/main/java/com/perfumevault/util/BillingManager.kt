@@ -2,6 +2,7 @@ package com.perfumevault.util
 
 import android.app.Activity
 import android.content.Context
+import android.widget.Toast
 import androidx.core.content.edit
 import com.android.billingclient.api.*
 import kotlinx.coroutines.CoroutineScope
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BillingManager(private val context: Context) : PurchasesUpdatedListener {
 
@@ -34,7 +36,7 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
             }
 
             override fun onBillingServiceDisconnected() {
-                // Try to restart connection on next request
+                // Connection lost, try to reconnect later
             }
         })
     }
@@ -57,7 +59,11 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     }
 
     fun purchaseRemoveAds(activity: Activity) {
-        if (!billingClient.isReady) return
+        if (!billingClient.isReady) {
+            Toast.makeText(context, "Verbindung zum Store wird aufgebaut...", Toast.LENGTH_SHORT).show()
+            startConnection()
+            return
+        }
 
         val productList = listOf(
             QueryProductDetailsParams.Product.newBuilder()
@@ -79,6 +85,8 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
                     ))
                     .build()
                 billingClient.launchBillingFlow(activity, flowParams)
+            } else {
+                Toast.makeText(context, "Produkt 'remove_ads' wurde im Play Store nicht gefunden.", Toast.LENGTH_LONG).show()
             }
         }
     }

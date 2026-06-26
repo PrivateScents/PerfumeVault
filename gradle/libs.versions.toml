@@ -8,13 +8,14 @@ fragment = "1.8.5"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2024.12.01"
-roomVersion = "2.7.0"
+roomVersion = "2.7.0-alpha13"
 workVersion = "2.11.2"
 retrofitVersion = "2.11.0"
 coroutinesVersion = "1.10.1"
 playServicesLocation = "21.3.0"
 kotlin = "2.2.10"
 ksp = "2.3.9"
+compose-multiplatform = "1.7.3"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -52,3 +53,6 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+androidx-room = { id = "androidx.room", version.ref = "roomVersion" }

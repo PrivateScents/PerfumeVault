@@ -19,7 +19,7 @@ class DailyReminderWorker(context: Context, params: WorkerParameters) : Coroutin
 
         // Einfache Erinnerung am Morgen
         notificationHelper.sendNotification(
-            "Guten Morgen! ✨",
+            "Guten Morgen!",
             "Welchen Duft trägst du heute? Vergiss nicht, dein Tagebuch zu füllen.",
             notificationId = 100
         )
@@ -29,7 +29,7 @@ class DailyReminderWorker(context: Context, params: WorkerParameters) : Coroutin
         if (emptyPerfumes.isNotEmpty()) {
             val p = emptyPerfumes.random()
             notificationHelper.sendNotification(
-                "Fast leer! 🧪",
+                "Fast leer!",
                 "Dein Duft '${p.name}' ist fast aufgebraucht. Zeit für Nachschub?",
                 notificationId = 101
             )
