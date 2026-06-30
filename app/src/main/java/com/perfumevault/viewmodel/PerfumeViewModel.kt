@@ -64,6 +64,15 @@ class PerfumeViewModel(
     private val _filterSeason = MutableStateFlow(prefs.getString("filter_season", "Alle") ?: "Alle")
     val filterSeason: StateFlow<String> = _filterSeason.asStateFlow()
 
+    private val _notificationHour = MutableStateFlow(prefs.getInt("notification_hour", 7))
+    val notificationHour: StateFlow<Int> = _notificationHour.asStateFlow()
+
+    private val _notificationMinute = MutableStateFlow(prefs.getInt("notification_minute", 0))
+    val notificationMinute: StateFlow<Int> = _notificationMinute.asStateFlow()
+
+    private val _rescheduleTrigger = MutableSharedFlow<Unit>()
+    val rescheduleTrigger = _rescheduleTrigger.asSharedFlow()
+
     // --- Localization Helper ---
     fun setLanguage(lang: String) {
         _currentLanguage.value = lang
@@ -238,6 +247,18 @@ class PerfumeViewModel(
     fun setFilterSeason(season: String) {
         _filterSeason.value = season
         prefs.edit { putString("filter_season", season) }
+    }
+
+    fun setNotificationTime(hour: Int, minute: Int) {
+        _notificationHour.value = hour
+        _notificationMinute.value = minute
+        prefs.edit { 
+            putInt("notification_hour", hour)
+            putInt("notification_minute", minute)
+        }
+        viewModelScope.launch {
+            _rescheduleTrigger.emit(Unit)
+        }
     }
 
     fun addPerfume(

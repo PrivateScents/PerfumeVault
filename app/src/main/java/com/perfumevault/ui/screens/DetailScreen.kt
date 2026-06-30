@@ -166,7 +166,7 @@ fun DetailScreen(
                     Spacer(Modifier.height(32.dp))
                     
                     Text(
-                        currentPerfume.brand.uppercase(),
+                        com.perfumevault.util.BrandHelper.shortenBrand(currentPerfume.brand).uppercase(),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 4.sp,

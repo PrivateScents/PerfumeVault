@@ -282,7 +282,7 @@ fun PerfumeCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            perfume.brand.uppercase(),
+                            com.perfumevault.util.BrandHelper.shortenBrand(perfume.brand).uppercase(),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.ExtraBold,
                             letterSpacing = 2.sp,

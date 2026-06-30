@@ -47,6 +47,7 @@ import com.perfumevault.viewmodel.PerfumeViewModelFactory
 import com.google.android.gms.ads.MobileAds
 import androidx.work.*
 import com.perfumevault.util.DailyReminderWorker
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
@@ -79,6 +80,12 @@ class MainActivity : ComponentActivity() {
             scheduleDailyReminder()
         }
 
+        lifecycleScope.launch {
+            viewModel.rescheduleTrigger.collect {
+                scheduleDailyReminder()
+            }
+        }
+
         setContent {
             val isDarkMode by viewModel.isDarkMode.collectAsState()
             PerfumeVaultTheme(darkTheme = isDarkMode) {
@@ -92,15 +99,19 @@ class MainActivity : ComponentActivity() {
             .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
             .build()
 
-        // Berechne Delay für 7:00 Uhr morgens
+        val targetHour = viewModel.notificationHour.value
+        val targetMinute = viewModel.notificationMinute.value
+
+        // Berechne Delay für die Zielzeit
         val calendar = Calendar.getInstance()
         val nowMillis = calendar.timeInMillis
         
-        if (calendar.get(Calendar.HOUR_OF_DAY) >= 7) {
+        if (calendar.get(Calendar.HOUR_OF_DAY) > targetHour || 
+            (calendar.get(Calendar.HOUR_OF_DAY) == targetHour && calendar.get(Calendar.MINUTE) >= targetMinute)) {
             calendar.add(Calendar.DAY_OF_YEAR, 1)
         }
-        calendar.set(Calendar.HOUR_OF_DAY, 7)
-        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.HOUR_OF_DAY, targetHour)
+        calendar.set(Calendar.MINUTE, targetMinute)
         calendar.set(Calendar.SECOND, 0)
         
         val delay = calendar.timeInMillis - nowMillis

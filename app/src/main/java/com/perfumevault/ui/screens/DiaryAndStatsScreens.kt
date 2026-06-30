@@ -181,7 +181,7 @@ fun LogCard(log: UsageLog, perfume: Perfume, viewModel: PerfumeViewModel, volAft
         ) {
             Column(modifier = Modifier.weight(1f).clickable { onPerfumeClick() }) {
                 Text(
-                    perfume.brand.uppercase(),
+                    com.perfumevault.util.BrandHelper.shortenBrand(perfume.brand).uppercase(),
                     fontSize = 11.sp,
                     color = adaptive.textSecondary,
                     fontWeight = FontWeight.Bold,
@@ -438,7 +438,7 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (String) -> Unit) {
                                     lineHeight = 28.sp
                                 )
                                 Text(
-                                    mostUsed!!.brand.uppercase(),
+                                    com.perfumevault.util.BrandHelper.shortenBrand(mostUsed!!.brand).uppercase(),
                                     color = adaptive.textPrimary.copy(alpha = 0.5f),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
@@ -536,7 +536,7 @@ fun StatsScreen(viewModel: PerfumeViewModel, onPerfumeClick: (String) -> Unit) {
                                         }
                                     }
                                     Text(
-                                        perfume.brand.uppercase(), 
+                                        com.perfumevault.util.BrandHelper.shortenBrand(perfume.brand).uppercase(),
                                         color = adaptive.textSecondary, 
                                         fontSize = 10.sp, 
                                         fontWeight = FontWeight.Bold,
@@ -644,11 +644,14 @@ fun MetricCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: PerfumeViewModel) {
     val currentLang by viewModel.currentLanguage.collectAsState()
     val isDarkMode by viewModel.isDarkMode.collectAsState()
     val isAdFree by viewModel.isAdFree.collectAsState()
+    val notificationHour by viewModel.notificationHour.collectAsState()
+    val notificationMinute by viewModel.notificationMinute.collectAsState()
     val perfumes by viewModel.absoluteAllPerfumes.collectAsState()
     val perfumeSizes by viewModel.allPerfumeSizes.collectAsState()
     val allLogs by viewModel.allLogs.collectAsState()
@@ -658,6 +661,7 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
     val scope = rememberCoroutineScope()
     
     var showBulkImport by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     var deleteConfirmationStep by remember { mutableIntStateOf(0) }
 
     LazyColumn(
@@ -687,7 +691,7 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
                         contentColor = AppleAccentBlue,
                         onClick = {
                             val activity = context as? android.app.Activity
-                            activity?.let { viewModel.purchaseRemoveAds(it) }
+                            activity?.let { viewModel.purchaseRemoveAds(activity) }
                         }
                     )
                 }
@@ -696,6 +700,21 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
                     label = viewModel.t("Dunkler Modus", "Dark Mode"),
                     checked = isDarkMode,
                     onCheckedChange = { viewModel.setDarkMode(it) }
+                )
+            }
+        }
+
+        // --- SECTION: NOTIFICATIONS ---
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SectionHeader(viewModel.t("Benachrichtigungen", "Notifications"))
+                SettingsActionCard(
+                    label = viewModel.t(
+                        "Erinnerung um %02d:%02d Uhr".format(notificationHour, notificationMinute),
+                        "Reminder at %02d:%02d".format(notificationHour, notificationMinute)
+                    ),
+                    icon = Icons.Default.NotificationsActive,
+                    onClick = { showTimePicker = true }
                 )
             }
         }
@@ -855,6 +874,52 @@ fun SettingsScreen(viewModel: PerfumeViewModel) {
         com.perfumevault.ui.dialogs.BulkAddDialog(
             viewModel = viewModel,
             onDismiss = { showBulkImport = false }
+        )
+    }
+
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState(
+            initialHour = notificationHour,
+            initialMinute = notificationMinute,
+            is24Hour = true
+        )
+
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.setNotificationTime(timePickerState.hour, timePickerState.minute)
+                    showTimePicker = false
+                }) {
+                    Text(viewModel.t("OK", "OK"), color = adaptive.textPrimary, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text(viewModel.t("Abbrechen", "Cancel"), color = adaptive.textSecondary)
+                }
+            },
+            containerColor = adaptive.glassBase,
+            shape = RoundedCornerShape(28.dp),
+            title = { Text(viewModel.t("Erinnerungszeit wählen", "Set Reminder Time"), color = adaptive.textPrimary) },
+            text = {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    TimePicker(
+                        state = timePickerState,
+                        colors = TimePickerDefaults.colors(
+                            clockDialColor = adaptive.textPrimary.copy(alpha = 0.05f),
+                            selectorColor = AppleAccentBlue,
+                            containerColor = Color.Transparent,
+                            periodSelectorSelectedContainerColor = AppleAccentBlue.copy(alpha = 0.1f),
+                            periodSelectorUnselectedContainerColor = Color.Transparent,
+                            timeSelectorSelectedContainerColor = AppleAccentBlue.copy(alpha = 0.1f),
+                            timeSelectorUnselectedContainerColor = adaptive.textPrimary.copy(alpha = 0.05f),
+                            timeSelectorSelectedContentColor = adaptive.textPrimary,
+                            timeSelectorUnselectedContentColor = adaptive.textPrimary.copy(alpha = 0.6f)
+                        )
+                    )
+                }
+            }
         )
     }
 
