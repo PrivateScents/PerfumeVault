@@ -1148,6 +1148,7 @@ fun BulkAddDialog(
     val context = LocalContext.current
     val adaptive = LocalAdaptiveColors.current
     val importError by viewModel.importError.collectAsState()
+    val importSuccessMessage by viewModel.importSuccessMessage.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.importSuccess.collect {
@@ -1194,11 +1195,26 @@ fun BulkAddDialog(
                 if (importError != null) {
                     ErrorBanner(importError!!)
                 }
+                
+                if (importSuccessMessage != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFF4CAF50).copy(alpha = 0.1f))
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(Icons.Default.CheckCircle, null, tint = Color(0xFF4CAF50))
+                        Text(importSuccessMessage!!, color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
+                }
 
                 Text(
                     viewModel.t(
-                        "Füge JSON oder Text (Marke; Name; Größe; Füllstand; Preis; Probe[true/false]) ein. Unterstützt Deutsch & Englisch.",
-                        "Paste JSON or text (Brand; Name; Size; Fill; Price; Sample[true/false]). Supports German & English."
+                        "Füge JSON oder Text ein. Unterstützt Deutsch & Englisch.\nText-Format: Marke; Name; Größe; Füllstand; Preis; Probe[true/false]; Bewertung; Konzentration; Jahreszeit; Anlass; Notizen; BildURL; Merkliste[true/false]",
+                        "Paste JSON or text. Supports German & English.\nText format: Brand; Name; Size; Fill; Price; Sample[true/false]; Rating; Concentration; Season; Occasion; Notes; ImageURL; Wishlist[true/false]"
                     ),
                     fontSize = 12.sp,
                     color = adaptive.textPrimary.copy(alpha = 0.5f),

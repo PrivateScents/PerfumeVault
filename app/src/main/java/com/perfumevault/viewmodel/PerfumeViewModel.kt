@@ -312,17 +312,26 @@ class PerfumeViewModel(
     private val _importError = MutableStateFlow<String?>(null)
     val importError: StateFlow<String?> = _importError.asStateFlow()
 
+    private val _importSuccessMessage = MutableStateFlow<String?>(null)
+    val importSuccessMessage: StateFlow<String?> = _importSuccessMessage.asStateFlow()
+
     private val _importSuccess = MutableSharedFlow<Unit>()
     val importSuccess = _importSuccess.asSharedFlow()
 
-    fun clearImportError() { _importError.value = null }
+    fun clearImportStatus() { 
+        _importError.value = null 
+        _importSuccessMessage.value = null
+    }
 
     fun addPerfumesFromText(text: String) {
         viewModelScope.launch {
             _importError.value = null
-            val perfumes = mutableListOf<Perfume>()
-            val logs = mutableListOf<UsageLog>()
-            val sizes = mutableListOf<com.perfumevault.data.PerfumeSize>()
+            _importSuccessMessage.value = null
+            
+            val newPerfumes = mutableListOf<Perfume>()
+            val newLogs = mutableListOf<UsageLog>()
+            val newSizes = mutableListOf<com.perfumevault.data.PerfumeSize>()
+            
             try {
                 val trimmed = text.trim()
                 if (trimmed.isEmpty()) {
@@ -330,30 +339,36 @@ class PerfumeViewModel(
                     return@launch
                 }
 
+                // Aktuelle Sammlung laden für Duplikats-Check und Update-ID Mapping
+                val existing = repo.allPerfumes.first() + repo.wishlistPerfumes.first()
+                val existingMap = existing.associateBy { "${it.brand.lowercase().trim()}|${it.name.lowercase().trim()}" }
+
+                var updatedCount = 0
+                var addedCount = 0
+
                 if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
-                    // JSON Format
+                    // --- JSON Format ---
+                    val rootPerfumes = mutableListOf<Perfume>()
                     if (trimmed.startsWith("[")) {
-                        // Legacy Array Format
                         val jsonArray = JSONArray(trimmed)
                         for (i in 0 until jsonArray.length()) {
-                            perfumes.add(parsePerfumeJson(jsonArray.getJSONObject(i)))
+                            rootPerfumes.add(parsePerfumeJson(jsonArray.getJSONObject(i)))
                         }
                     } else {
-                        // Full Export Format
                         val root = org.json.JSONObject(trimmed)
-                        
                         val perfumesArray = root.optJSONArray("perfumes") ?: root.optJSONArray("parfueme")
                         if (perfumesArray != null) {
                             for (i in 0 until perfumesArray.length()) {
-                                perfumes.add(parsePerfumeJson(perfumesArray.getJSONObject(i)))
+                                rootPerfumes.add(parsePerfumeJson(perfumesArray.getJSONObject(i)))
                             }
                         }
                         
+                        // Logs und Sizes
                         val logsArray = root.optJSONArray("logs") ?: root.optJSONArray("eintraege")
                         if (logsArray != null) {
                             for (i in 0 until logsArray.length()) {
                                 val obj = logsArray.getJSONObject(i)
-                                logs.add(UsageLog(
+                                newLogs.add(UsageLog(
                                     perfumeId = obj.optString("perfumeId", obj.optString("parfuemId", "")),
                                     date = obj.optString("date", obj.optString("datum", "")),
                                     occasion = obj.optString("occasion", obj.optString("anlass", "")),
@@ -363,56 +378,80 @@ class PerfumeViewModel(
                                 ))
                             }
                         }
+                    }
 
-                        val sizesArray = root.optJSONArray("sizes") ?: root.optJSONArray("groessen")
-                        if (sizesArray != null) {
-                            for (i in 0 until sizesArray.length()) {
-                                val obj = sizesArray.getJSONObject(i)
-                                sizes.add(com.perfumevault.data.PerfumeSize(
-                                    perfumeId = obj.optString("perfumeId", obj.optString("parfuemId", "")),
-                                    ml = obj.optInt("ml", 0)
-                                ))
-                            }
-                        }
-                        
-                        if (perfumes.isEmpty() && logs.isEmpty()) {
-                            _importError.value = t("Keine gültigen Daten im JSON gefunden", "No valid data found in JSON")
-                            return@launch
+                    rootPerfumes.forEach { p ->
+                        val key = "${p.brand.lowercase().trim()}|${p.name.lowercase().trim()}"
+                        val existingPerfume = existingMap[key]
+                        if (existingPerfume != null) {
+                            // Update: Behalte die existierende ID
+                            newPerfumes.add(p.copy(id = existingPerfume.id))
+                            updatedCount++
+                        } else {
+                            // Neu hinzufügen
+                            newPerfumes.add(p)
+                            addedCount++
                         }
                     }
                 } else {
-                    // CSV / Text Format
+                    // --- CSV / Text Format ---
                     trimmed.lines().forEachIndexed { index, line ->
                         if (line.isBlank()) return@forEachIndexed
                         val parts = line.split(";")
                         if (parts.size >= 2) {
-                            perfumes.add(Perfume(
-                                id = java.util.UUID.randomUUID().toString(),
-                                brand = parts[0].trim(),
-                                name = parts[1].trim(),
-                                bottleSize = parts.getOrNull(2)?.toIntOrNull() ?: 100,
-                                remainingMl = parts.getOrNull(3)?.replace(",", ".")?.toDoubleOrNull() ?: 100.0,
-                                price = parts.getOrNull(4)?.replace(",", ".")?.toDoubleOrNull() ?: 0.0,
-                                isSample = parts.getOrNull(5)?.trim()?.lowercase() == "true",
-                                rating = 7.0,
-                                addedDate = LocalDate.now().toString()
-                            ))
+                            val brand = parts[0].trim()
+                            val name = parts[1].trim()
+                            val key = "${brand.lowercase()}|${name.lowercase()}"
+                            
+                            val existingPerfume = existingMap[key]
+                            val perfumeToSave = Perfume(
+                                id = existingPerfume?.id ?: java.util.UUID.randomUUID().toString(),
+                                brand = brand,
+                                name = name,
+                                bottleSize = parts.getOrNull(2)?.toIntOrNull() ?: (existingPerfume?.bottleSize ?: 100),
+                                remainingMl = parts.getOrNull(3)?.replace(",", ".")?.toDoubleOrNull() ?: (existingPerfume?.remainingMl ?: 100.0),
+                                price = parts.getOrNull(4)?.replace(",", ".")?.toDoubleOrNull() ?: (existingPerfume?.price ?: 0.0),
+                                isSample = parts.getOrNull(5)?.trim()?.lowercase() == "true" || (existingPerfume?.isSample ?: false),
+                                rating = parts.getOrNull(6)?.replace(",", ".")?.toDoubleOrNull()?.coerceIn(1.0, 10.0) ?: (existingPerfume?.rating ?: 7.0),
+                                concentration = parts.getOrNull(7)?.trim() ?: (existingPerfume?.concentration ?: "EDP"),
+                                season = parts.getOrNull(8)?.trim() ?: (existingPerfume?.season ?: "Alle"),
+                                occasion = parts.getOrNull(9)?.trim() ?: (existingPerfume?.occasion ?: "Alle"),
+                                notes = parts.getOrNull(10)?.trim() ?: (existingPerfume?.notes ?: ""),
+                                imageUrl = parts.getOrNull(11)?.trim() ?: (existingPerfume?.imageUrl ?: ""),
+                                isWishlist = parts.getOrNull(12)?.trim()?.lowercase() == "true" || (existingPerfume?.isWishlist ?: false),
+                                addedDate = existingPerfume?.addedDate ?: LocalDate.now().toString()
+                            )
+                            
+                            newPerfumes.add(perfumeToSave)
+                            if (existingPerfume != null) updatedCount++ else addedCount++
                         } else {
                             if (parts.isNotEmpty() && parts[0].isNotBlank()) {
-                                throw Exception(t("Zeile ${index + 1} ungültig (mind. Marke und Name nötig)", "Line ${index + 1} invalid (min. brand and name needed)"))
+                                throw Exception(t("Zeile ${index + 1} ungültig", "Line ${index + 1} invalid"))
                             }
                         }
                     }
                 }
                 
-                if (perfumes.isNotEmpty()) repo.addPerfumes(perfumes)
-                if (logs.isNotEmpty()) repo.addLogs(logs)
-                if (sizes.isNotEmpty()) repo.addSizes(sizes)
+                if (newPerfumes.isNotEmpty()) repo.addPerfumes(newPerfumes)
+                if (newLogs.isNotEmpty()) repo.addLogs(newLogs)
+                if (newSizes.isNotEmpty()) repo.addSizes(newSizes)
 
+                val msg = if (addedCount > 0 && updatedCount > 0) {
+                    t("Erfolg: $addedCount neu, $updatedCount aktualisiert.", "Success: $addedCount new, $updatedCount updated.")
+                } else if (addedCount > 0) {
+                    t("Erfolg: $addedCount Düfte hinzugefügt.", "Success: $addedCount fragrances added.")
+                } else if (updatedCount > 0) {
+                    t("Erfolg: $updatedCount Düfte aktualisiert.", "Success: $updatedCount fragrances updated.")
+                } else {
+                    t("Keine Änderungen vorgenommen.", "No changes made.")
+                }
+                
+                _importSuccessMessage.value = msg
+                kotlinx.coroutines.delay(2000)
                 _importSuccess.emit(Unit)
 
             } catch (e: Exception) {
-                _importError.value = t("Fehler: ", "Error: ") + (e.message ?: t("Unbekanntes Format", "Unknown format"))
+                _importError.value = t("Fehler: ", "Error: ") + (e.message ?: t("Format ungültig", "Invalid format"))
             }
         }
     }
